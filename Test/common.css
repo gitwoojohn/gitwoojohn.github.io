@@ -1,0 +1,138 @@
+/* 기본 스타일 */
+:root {
+    --primary-color: #2563eb;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, sans-serif;
+    background: var(--bg-color);
+    color: #333;
+}
+
+/* 레이아웃: PC 환경 */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 280px;
+    background: #1e293b;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* 탭 스타일 */
+.tab-navigation {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #334155;
+    color: #94a3b8;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* 차트/카드 스타일 */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.kpi-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 5px;
+    color: var(--primary-color);
+}
+
+.chart-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    height: 400px;
+    position: relative;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- 모바일 대응 (아이폰 15 Pro Max 포함) --- */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+        padding-top: env(safe-area-inset-top);
+        /* 아이폰 노치 대응 */
+    }
+
+    .tab-navigation {
+        flex-direction: row;
+        /* 가로로 나열 */
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .tab-btn {
+        flex: 0 0 auto;
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+
+    /* 모바일에서 차트 높이 축소 */
+}

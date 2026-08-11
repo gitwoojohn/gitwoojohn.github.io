@@ -1,0 +1,336 @@
+/* ============================================================================
+   PATTERN STATISTICS TAB - LAYOUT & GRID
+   ========================================================================= */
+/* .pattern-input-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  padding-bottom: 20px;
+} */
+
+.stats-summary-container {
+  background: var(--card);
+  /* 배경색 적용 */
+  border: 1px solid var(--border);
+  /* 테두리 적용 */
+  border-radius: 12px;
+  /* 모서리 곡률 */
+  padding: 20px;
+  /* 안쪽 여백 - 디자인 핵심 */
+  margin-bottom: 25px;
+  /* 하단 리스트와의 간격 */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* 내부 카드와 차트 사이 간격 */
+}
+.stats-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-title-row h3 {
+  margin: 0;
+}
+
+#total-rounds-badge {
+  font-size: 1rem;
+}
+
+.pattern-analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.pattern-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card label {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+#most-common-pattern {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 5px;
+}
+
+#pattern-frequency {
+  font-size: 0.9rem;
+  color: #8b949e;
+}
+
+.stat-card.chart-card {
+  height: 100px;
+  align-items: center;
+}
+
+/* ============================================================================
+   PATTERN RESULTS LIST (특별 패턴 분석 리스트)
+   ========================================================================= */
+
+/* .pattern-results {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0;
+}
+
+.pattern-results h3 {
+  flex-shrink: 0;
+  color: var(--text);
+  font-size: 1.2rem;
+} */
+
+.pattern-results h3 small {
+  color: #8b949e;
+  font-size: 0.8rem;
+}
+
+.result-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 패턴 리스트 행 (Row) */
+.pattern-row {
+  background: var(--bg);
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pattern-row:hover {
+  border-color: var(--accent);
+  /* 강조색으로 변경 */
+  background-color: rgba(88, 166, 255, 0.08);
+  /* 배경 농도 살짝 증가 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  /* 은은한 그림자로 입체감 부여 */
+}
+/* 호버 시 화살표 색상 변경 및 살짝 아래로 이동 */
+.pattern-row:hover .accordion-arrow-icon {
+  color: var(--accent);
+  transform: translateY(2px);
+}
+
+/* 호버 시 회차 텍스트 강조 */
+.pattern-row:hover .pattern-round-text {
+  color: #fff;
+  text-shadow: 0 0 5px rgba(88, 166, 255, 0.5);
+}
+
+
+/* 회차 및 정보 텍스트 */
+.pattern-round-info {
+  text-align: center;
+  min-width: 60px;
+}
+
+.pattern-round-text {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.pattern-balls-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.pattern-group-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pattern-plus-sign {
+  color: #8b949e;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* 우측 직전 보너스 정보 */
+.pattern-right-info {
+  text-align: right;
+  min-width: 80px;
+  padding-left: 10px;
+  border-left: 1px dashed #444;
+}
+
+.pattern-prev-text {
+  font-size: 0.7rem;
+  color: #8b949e;
+}
+
+.pattern-bonus-text {
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.pattern-bonus-number {
+  color: var(--color-20);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* ============================================================================
+   PATTERN BADGE & ICONS (공통 컴포넌트)
+   ========================================================================= */
+
+.pattern-badge-main {
+  background: rgba(88, 166, 255, 0.1);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  border-radius: 6px;
+  padding: 5px 15px;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.pattern-badge-main .label {
+  color: #8b949e;
+  margin-right: 4px;
+}
+
+.pattern-arrow {
+  color: #555;
+  margin: 0 8px;
+}
+
+.accordion-arrow-icon {
+  color: #8b949e;
+  transition: transform 0.3s;
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
+.badge-count {
+  color: var(--accent);
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+/* ============================================================================
+   DETAIL PANEL STYLES (아코디언 상세 내용)
+   ========================================================================= */
+
+.detail-panel {
+  display: none;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 5px;
+  margin-top: 2px;
+}
+
+.detail-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 5px 0;
+}
+
+.detail-title-section {
+  min-width: 90px;
+  text-align: right;
+}
+
+.detail-title {
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.detail-round {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.detail-balls-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-desc {
+  font-size: 0.9rem;
+  color: #8b949e;
+  margin-left: auto;
+}
+
+/* 상세 패널용 구분선 */
+.detail-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+/* 상세 패널용 구분선 (공 사이) */
+.detail-divider {
+  color: #555;
+}
+
+/* 공 스타일 (상세용 큰 사이즈 및 대시) */
+.ball-lg {
+  width: 38px;
+  height: 38px;
+  font-size: 1rem;
+}
+
+.ball-dashed {
+  border-style: dashed;
+  border-width: 2px;
+}
+
+/* 상세 패널 패턴 배지 */
+.detail-pattern-badge {
+  background: rgba(88, 166, 255, 0.1);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 15px;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.detail-pattern-badge .label {
+  color: #8b949e;
+  margin-right: 4px;
+}

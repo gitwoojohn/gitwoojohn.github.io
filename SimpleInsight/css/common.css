@@ -1,0 +1,677 @@
+/* ============================================================================
+   CSS VARIABLES
+   ========================================================================= */
+:root {
+  --bg: #0d1117;
+  --side: #161b22;
+  --card: #21262d;
+  --accent: #58a6ff;
+  --highlight: #f2cc60;
+  --text: #c9d1d9;
+  --border: #30363d;
+  --color-1: #f2cc60;
+  --color-10: #58a6ff;
+  --color-20: #ff7b72;
+  --color-30: #8b949e;
+  --color-40: #3fb950;
+}
+
+/* ============================================================================
+   BASE & LAYOUT
+   ========================================================================= */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* ============================================================================
+   SIDEBAR
+   ========================================================================= */
+.sidebar {
+  width: 320px;
+  background: var(--side);
+  border-right: 1px solid var(--border);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* .brand {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 30px;
+  text-align: center;
+} */
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* 아이콘과 텍스트 사이 간격 */
+
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.brand-icon {
+  width: 1.6rem;
+  /* 글자 크기보다 살짝 크게 설정 */
+  height: 1.6rem;
+  flex-shrink: 0;
+  /* 아이콘이 찌그러지지 않게 보호 */
+}
+
+.report-panel {
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.report-content {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #8b949e;
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA
+   ========================================================================= */
+.main-content {
+  flex: 1;
+  padding: 25px;
+  overflow-y: scroll;
+  /* 스크롤바가 차지하는 공간을 항상 일정하게 유지 */
+  scrollbar-gutter: stable;
+}
+
+/* ============================================================================
+   BUTTONS
+   ========================================================================= */
+.btn-primary {
+  display: block;
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: #4a8fd9;
+}
+
+#csvFile {
+  display: none;
+}
+
+/* ============================================================================
+   TAB NAVIGATION
+   ========================================================================= */
+.tab-navigation {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--text);
+  border: none;
+  padding: 5px 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  color: var(--accent);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+}
+
+/* ============================================================================
+   LOTTERY BALLS (공통)
+   ========================================================================= */
+.balls-container {
+  display: flex;
+  gap: 12px;
+}
+
+/* .ball {
+  width: 40px;
+  height: 40px;
+  background: #0d1117;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+} */
+
+.ball {
+  width: 38px;
+  height: 38px;
+  background: #0d1117;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+
+  /* 1. 중앙 정렬은 Flex가 담당하게 함 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 2. line-height는 반드시 제거하거나 0으로 설정 */
+  /* (line-height가 있으면 맥에서 숫자를 위로 밀어 올리는 간섭이 생깁니다) */
+  line-height: 1.1;
+
+  font-size: 1.4rem;
+  font-weight: 900;
+
+  /* 3. 핵심: 맥북 사파리에서 위로 쏠리는 현상을 아래로 눌러주는 보정값 */
+  /* 윈도우에서도 크게 틀어지지 않으면서 맥의 위 쏠림을 해결하는 최적값입니다. */
+  padding: 0px;
+
+  /* 패딩을 넣어도 원의 크기가 40px로 유지되도록 설정 */
+  box-sizing: border-box;
+}
+
+/* 2. 맥(Mac OS) 환경에서만 적용되는 별도 CSS */
+/* 맥용 브라우저들은 엔진 특성상 숫자가 위로 쏠리므로 아래 코드가 작동합니다. */
+@supports (-webkit-hyphens:none) {
+  .ball {
+    padding-top: 3px;
+    /* 맥에서만 숫자를 아래로 3px 밀어내 정중앙 배치 */
+  }
+}
+
+.ball.bonus {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.ball.range-1 {
+  border-color: var(--color-1);
+  color: var(--color-1);
+}
+
+.ball.range-10 {
+  border-color: var(--color-10);
+  color: var(--color-10);
+}
+
+.ball.range-20 {
+  border-color: var(--color-20);
+  color: var(--color-20);
+}
+
+.ball.range-30 {
+  border-color: var(--color-30);
+  color: var(--color-30);
+}
+
+.ball.range-40 {
+  border-color: var(--color-40);
+  color: var(--color-40);
+}
+
+.ball.empty {
+  color: #30363d;
+  border-color: #30363d;
+}
+
+/* Divider */
+.divider {
+  color: #8b949e;
+  font-size: 1.2rem;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+/* ============================================================================
+   BADGES
+   ========================================================================= */
+.badge-good {
+  background: rgba(63, 185, 80, 0.2) !important;
+  color: #3fb950 !important;
+  font-weight: bold;
+}
+
+/* ============================================================================
+   CHARTS (공통)
+   ========================================================================= */
+.chart-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.chart-container h4 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: var(--text);
+}
+
+canvas {
+  max-height: 220px;
+  width: 100% !important;
+}
+
+/* ============================================================================
+   SCROLLBAR (공통)
+   ========================================================================= */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
+}
+
+/* ============================================================================
+   PATTERN RESULTS
+   ========================================================================= */
+.pattern-results {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  min-height: 800px;
+}
+
+.pattern-results h3 {
+  color: var(--text);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pattern-results h3 svg {
+  color: var(--accent);
+}
+
+/* common.css 하단 혹은 적절한 위치에 추가 */
+.insight-container {
+  padding: 10px 0;
+}
+
+.match-count {
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  color: var(--text);
+}
+
+.match-count strong {
+  color: var(--accent);
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.insight-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.insight-item strong {
+  color: var(--highlight);
+}
+
+.insight-tip {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin-top: 15px;
+  line-height: 1.4;
+}
+
+.insight-report {
+  color: var(--text);
+}
+
+.insight-header {
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  /* padding-bottom: 10px;
+  border-bottom: 1px solid var(--border); */
+}
+
+.insight-section {
+  margin-bottom: 25px;
+}
+
+.insight-section h4 {
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.insight-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.range-label {
+  color: #8b949e;
+  width: 50px;
+}
+
+.range-val strong {
+  color: var(--highlight);
+}
+
+.status-hot {
+  color: #ff7b72;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.status-cold {
+  color: #58a6ff;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.sum-box {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 10px 0;
+}
+
+.tip {
+  font-size: 0.7rem;
+  color: #8b949e;
+  line-height: 1.4;
+}
+
+/* 사이드바 리포트 전용 스타일 */
+.similarity-badge {
+  display: inline-block;
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border: 1px solid var(--accent);
+}
+
+.insight-header p {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.status-hot {
+  background: rgba(255, 123, 114, 0.1);
+  color: #ff7b72;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.status-cold {
+  background: rgba(88, 166, 255, 0.1);
+  color: #58a6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.sum-box {
+  background: linear-gradient(90deg, var(--accent), #3a86ff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 예상 패턴 카드 스타일 */
+.prediction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.prediction-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 4px solid var(--border);
+  padding: 12px 15px;
+  border-radius: 0 8px 8px 0;
+  transition: all 0.3s ease;
+}
+
+.prediction-card.best {
+  background: rgba(88, 166, 255, 0.1);
+  border-left-color: var(--accent);
+  transform: scale(1.02);
+}
+
+.prediction-card .rank {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.prediction-card .pattern-string {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--highlight);
+}
+
+.prediction-card .pattern-meta {
+  font-size: 0.8rem;
+  color: #8b949e;
+  margin-top: 5px;
+}
+
+.insight-section h4 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+/* count 숫자 강조 스타일 */
+.insight-header .highlight {
+  color: var(--highlight);
+  /* 기존 노란색 계열 유지 */
+  font-size: 1.2rem;
+  /* 글자 크기를 약간 키움 */
+  font-weight: 800;
+  /* 아주 굵게 설정 */
+  margin: 0 2px;
+  /* 숫자 좌우 간격 확보 */
+  text-shadow: 0 0 8px rgba(242, 204, 96, 0.3);
+  /* 은은한 글로우 효과 */
+  border-bottom: 2px solid var(--highlight);
+  /* 하단에 강조 선 추가 */
+  padding-bottom: 1px;
+}
+
+/* 문구 전체적인 밸런스 조정 */
+.insight-header p {
+  font-size: 0.95rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* 단어 간격 조정 */
+}
+
+/* common.css에 추가 권장 */
+.highlight-text {
+  color: var(--highlight);
+  font-weight: bold;
+  font-size: 1.1em;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* 중앙 하단 배치 및 진짜 다크 골드 디자인 */
+#toast-container {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.toast-message {
+  /* 1. 배경: 노란기 없는 묵직한 다크 초콜릿 브라운 */
+  background-color: #241D12;
+  /* 2. 글자: 반짝이는 노란색이 아닌 세련된 샌드 골드 */
+  color: #FFFFFF;
+  /* 3. 테두리: 채도가 낮은 매트한 골드 선 */
+  border: 1px solid #7D653F;
+
+  padding: 14px 35px;
+  border-radius: 4px;
+  /* 4. 그림자: 검정 그림자가 아닌 배경색과 어우러지는 깊은 갈색 그림자 */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: -0.02em;
+
+  will-change: transform, opacity;
+  animation: toastPopUp 0.3s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastFadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-message.fade-out {
+  opacity: 0;
+  transform: translateY(-10px) translateX(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* 사이드바 기본 상태에 애니메이션 추가 */
+.sidebar {
+  transition: transform 0.3s ease, margin-left 0.3s ease;
+  width: 320px;
+}
+
+/* 사이드바가 숨겨진 상태 */
+.sidebar.collapsed {
+  margin-left: -320px;
+  /* 너비만큼 왼쪽으로 밀기 */
+}
+
+/* 토글 버튼 스타일 */
+.btn-toggle {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  z-index: 1000;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-toggle:hover {
+  background: var(--accent);
+}

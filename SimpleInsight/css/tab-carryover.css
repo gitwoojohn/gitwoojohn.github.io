@@ -1,0 +1,107 @@
+/* tab-carryover.css */
+
+#tab-carryover .pattern-input-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(60px, 100px));
+    gap: 8px;
+    justify-content: center;
+    flex: 1;
+}
+
+/* tab-carryover.css */
+#tab-carryover .button-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    /* 라벨과의 높이 밸런스 */
+    white-space: nowrap;
+    /* 텍스트가 다음 행으로 내려가는 것 방지 */
+    min-width: -webkit-fill-available;
+    min-width: fit-content;
+}
+
+/* 체크박스 그룹 가로 정렬 및 간격 조절 */
+#tab-carryover .checkbox-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin-top: 25px;
+    /* 라벨과의 높이 밸런스 */
+    white-space: nowrap;
+    /* 텍스트가 다음 행으로 내려가는 것 방지 */
+    min-width: -webkit-fill-available;
+    min-width: fit-content;
+    /* 콘텐츠에 맞게 최소 너비 확보 */
+}
+
+#tab-carryover .checkbox-container input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--highlight);
+}
+
+#tab-carryover .checkbox-container label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+/* 셀렉트 박스 디자인 통일 */
+#co-count-select {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#co-count-select:focus {
+    border-color: var(--highlight);
+}
+
+/* 리포트 내 제외수 텍스트 스타일 */
+.no-data-text {
+    color: var(--text-muted, #8b949e);
+    font-size: 0.85rem;
+    word-break: break-all;
+    display: block;
+    margin-top: 4px;
+}
+
+/* 분석 결과 건수 강조 */
+#carryover-count-badge {
+    font-weight: bold;
+    color: var(--highlight);
+}
+
+/* 상세 설명 영역 내 이월 텍스트 강조 */
+#tab-carryover .detail-desc {
+    color: var(--highlight);
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* 이월된 공 하이라이트 (테두리 두께 및 그림자 조절) */
+.carryover-ball {
+    box-shadow: 0 0 0 2px var(--highlight);
+    border-color: var(--highlight) !important;
+    position: relative;
+    z-index: 2;
+}
+
+/* 중앙 연산자 영역 스타일 조정 */
+#tab-carryover .operator {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tab-pattern-search.css">
+
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="header-main sticky top-0 z-50">
+            <div class="flex justify-between items-center w-full">
+                <h1 class="text-2xl font-black tracking-tighter text-[#f2cc60]">Pattern Master</h1>
+                <button onclick="handleFileUpload()"
+                    class="flex items-center gap-2 bg-[#21262d] px-3 py-1.5 rounded-lg border border-[#30363d] text-[#58a6ff]" type="button">
+                    <span class="text-[11px] font-bold">CSV</span>
+                    <i data-lucide="file-up" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <nav class="tab-nav sticky top-[73px] z-40">
+            <button class="tab-btn active" data-tab="chart-analysis" type="button">차트</button>
+            <button class="tab-btn" data-tab="pattern-search" type="button">패턴</button>
+            <button class="tab-btn" data-tab="carryover-sum" type="button">이월합</button>
+            <button class="tab-btn" data-tab="carryover-multiple" type="button">이월곱</button>
+        </nav>
+
+        <div id="chart-analysis" class="tab-content active">
+            <main class="px-4 mt-8">
+                <div class="recommend-card">
+                    <div
+                        class="absolute -top-3 left-6 bg-[#58a6ff] text-white text-[12px] font-black px-4 py-1.5 rounded-full shadow-lg">
+                        AI 추천 번호
+                    </div>
+                    <div class="card-inner">
+                        <div class="balls-wrapper">
+                            <div class="ball empty">?</div>
+                            <div class="ball empty">?</div>
+                            <div class="ball empty">?</div>
+                            <div class="ball empty">?</div>
+                            <div class="ball empty">?</div>
+                            <div class="ball empty">?</div>
+                        </div>
+                        <div class="flex-shrink-0 w-[1px] h-10 bg-[#30363d] mx-3"></div>
+                        <div class="summary-container">
+                            <span class="text-[9px] text-gray-500 font-bold mb-1 tracking-tighter">합계</span>
+                            <span id="summary-total">0</span>
+                            <i data-lucide="triangle-alert" class="w-3.5 h-3.5 text-[#30363d] mt-2"></i>
+                        </div>
+                    </div>
+                </div>
+        
+                <div id="skip-number-section" class="mt-6 hidden px-1">
+                    <h3 class="text-[11px] font-bold text-gray-500 mb-3 tracking-widest uppercase opacity-80">
+                        장기 미출현 번호 (15회 이상)
+                    </h3>
+                    <div id="skip-number-list" class="flex flex-wrap gap-2"></div>
+                </div>
+        
+                <div class="mt-6 bg-[#161b22]/60 border border-[#30363d] rounded-[24px] p-5">
+                    <h3 class="text-sm font-bold text-[#c9d1d9] mb-4 tracking-tight">
+                        미출현 번호 분석
+                    </h3>
+                    <div class="h-[250px] w-full">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+        
+                <div id="pair-chart-section" class="mt-6 bg-[#161b22]/60 border border-[#30363d] rounded-[24px] p-5">
+                    <h3 class="text-sm font-bold text-[#c9d1d9] mb-4 tracking-tight">
+                        최고 궁합수 분석 (상위 15개)
+                    </h3>
+                    <div class="h-[300px] w-full">
+                        <canvas id="pairChart"></canvas>
+                    </div>
+                </div>
+        
+                <div id="ending-chart-section" class="mt-6 pb-10 bg-[#161b22]/60 border border-[#30363d] rounded-[24px] p-5">
+                    <h3 class="text-sm font-bold text-[#c9d1d9] mb-4 tracking-tight">
+                        끝수 출현 분포 (0-9)
+                    </h3>
+                    <div class="h-[250px] w-full">
+                        <canvas id="endingChart"></canvas>
+                    </div>
+                </div>
+        
+                <div id="insight-section" class="mt-8 mb-10 hidden px-1">
+                    <div class="flex items-center gap-2 mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                            stroke="#f2cc60" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-sparkles">
+                            <path
+                                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                            <path d="M5 3v4" />
+                            <path d="M3 5h4" />
+                            <path d="M21 17v4" />
+                            <path d="M19 19h4" />
+                        </svg>
+                        <h3 class="text-lg font-black text-[#f2cc60] tracking-tighter">AI 분석 인사이트</h3>
+                        <div class="h-[1px] flex-1 bg-[#30363d]"></div>
+                    </div>
+        
+                    <div class="grid gap-4">
+                        <div class="bg-[#58a6ff]/10 border border-[#58a6ff]/30 rounded-[24px] p-5">
+                            <p id="insight-summary" class="text-[13px] leading-relaxed text-[#c9d1d9]"></p>
+                        </div>
+        
+                        <div class="space-y-3">
+                            <div class="bg-[#161b22]/60 border border-[#30363d] rounded-[20px] p-4">
+                                <h4 class="text-[12px] font-bold text-[#58a6ff] mb-2 uppercase tracking-[0.2em]">미출현 번호</h4>
+                                <p id="insight-cold" class="text-[12px] text-gray-400 leading-snug"></p>
+                            </div>
+        
+                            <div class="bg-[#161b22]/60 border border-[#30363d] rounded-[20px] p-4">
+                                <h4 class="text-[12px] font-bold text-[#58a6ff] mb-2 uppercase tracking-[0.2em]">궁합 수</h4>
+                                <p id="insight-pair" class="text-[12px] text-gray-400 leading-snug"></p>
+                            </div>
+        
+                            <div class="bg-[#161b22]/60 border border-[#30363d] rounded-[20px] p-4">
+                                <h4 class="text-[12px] font-bold text-[#58a6ff] mb-2 uppercase tracking-[0.2em]">추천 번호 분석</h4>
+                                <p id="insight-balance" class="text-[12px] text-gray-400 leading-snug"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="h-10"></div>
+            </main>
+        </div>
+
+        <!-- 1-9, 10-19 ... 구간 패턴 분석 -->
+        <div id="pattern-search" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="range-1-9">1-9</label>
+                            <input type="number" id="range-1-9" min="0" max="6" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-10-19">10-19</label>
+                            <input type="number" id="range-10-19" min="0" max="6" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-20-29">20-29</label>
+                            <input type="number" id="range-20-29" min="0" max="6" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-30-39">30-39</label>
+                            <input type="number" id="range-30-39" min="0" max="6" value="2">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-40-45">40-45</label>
+                            <input type="number" id="range-40-45" min="0" max="6" value="1">
+                        </div>
+                        <button id="searchPattern" class="btn-primary" type="button">패턴 검색</button>
+                    </div>
+                </div>
+                
+                <!-- 패턴 인사이트 정보 -->
+                <div id="insight-content" class="mt-6 pb-10"></div>
+        
+                <div id="pattern-list" class="mt-4 space-y-3 overflow-y-auto"></div>
+            </section>
+        </div>
+
+    </div> <!-- end div -->
+
+    <script src="js/common.js"></script>
+    <script src="js/tab-main-chart.js"></script>
+    <script src="js/tab-pattern-search.js"></script>
+
+</body>
+
+</html>

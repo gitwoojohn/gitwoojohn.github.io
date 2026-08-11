@@ -1,0 +1,209 @@
+input[type="text"] {
+    padding: 0;
+    /* 또는 원하는 padding 값 */
+    margin: 0;
+    box-sizing: border-box;
+    /* 패딩이 너비에 영향을 주지 않도록 설정 */
+}
+
+/* 자동완성 시 배경색과 글자색 제어 */
+#flow-batch-input:-webkit-autofill,
+#flow-batch-input:-webkit-autofill:hover,
+#flow-batch-input:-webkit-autofill:focus {
+    /* 배경색 */
+    -webkit-box-shadow: 0 0 0px 1000px #1e1f22 inset !important;
+    /* 글자색 유지 */
+    -webkit-text-fill-color: #ffffff !important;
+    /* 배경색 변화 속도를 늦춰서 시각적으로 안 보이게 함 */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* 결과 출력 영역 배경판 */
+#round-flow .pattern-results {
+    background-color: #2b2d31 !important;
+    padding: 15px !important;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 리스트 컨테이너 */
+#round-flow .flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* 카드 간격 최적화 */
+}
+
+/* 개별 회차 행 카드 */
+#round-flow .result-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+/* 마우스 호버 효과 (JS 이벤트 리스너 대체) */
+#round-flow .result-wrapper:hover {
+    background-color: #383a40;
+}
+
+/* 선택된 타겟 회차 강조 스타일 */
+#round-flow .result-wrapper.active {
+    border: 2px solid var(--accent, #3182ce);
+    background-color: rgba(49, 130, 206, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+/* 내부 레이아웃 */
+#round-flow .result-item {
+    padding: 12px 16px;
+}
+
+#round-flow .result-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#round-flow .result-round {
+    min-width: 70px;
+    font-weight: 800;
+    color: #a0aec0;
+    font-size: 1.1rem;
+}
+
+/* 활성화된 회차 텍스트 색상 */
+#round-flow .result-wrapper.active .result-round {
+    color: #63b3ed;
+}
+
+#round-flow .result-numbers {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* 공통 요소 스타일 */
+#round-flow .ball {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+#round-flow .divider {
+    color: var(--border, #4a5568);
+    margin: 0 8px;
+    font-size: 1.2rem;
+    opacity: 0.5;
+}
+
+#round-flow .sum-value {
+    font-weight: 800;
+    color: var(--highlight, #f6ad55);
+    font-size: 1.1rem;
+    min-width: 35px;
+    text-align: center;
+}
+
+#round-flow .pattern-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text, #e2e8f0);
+    letter-spacing: 1px;
+}
+
+#round-flow .pattern-label {
+    color: var(--accent, #63b3ed);
+    font-size: 0.8rem;
+    margin-right: 5px;
+    font-weight: 700;
+}
+
+#round-flow .flow-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* 입력 그룹 (기존 유지) */
+/* #round-flow .input-group {
+    display: flex;
+    gap: 10px;
+} */
+
+/* 그리드 한 줄 레이아웃 최적화 */
+/* 그리드 레이아웃 수정 */
+#round-flow .pattern-input-grid {
+    display: grid;
+    /* 기준회차(80px) / 버튼(140px) / 콤보박스(160px) / 붙여넣기(남은공간) */
+    grid-template-columns: 130px 140px 130px 1fr;
+    gap: 10px;
+    align-items: end;
+    /* 라벨 아래로 정렬 */
+    justify-content: stretch;
+    /* center 대신 stretch로 너비 확보 */
+}
+
+/* 입력 필드가 부모 너비를 100% 채우도록 설정 */
+#round-flow .input-group input,
+#round-flow #flow-batch-input,
+#round-flow .input-group select,
+#round-flow .input-group button {
+    width: 100%;
+    height: 50px;
+    box-sizing: border-box;
+}
+
+/* 기준 회차 입력 필드 전용 너비 확인 */
+#round-flow #flow-round-input {
+    /* width: 130px; */
+    max-width: 130px;
+    text-align: center;
+}
+
+/* 버튼 전용 여백 조정 (라벨이 없는 버튼 위치 교정) */
+#round-flow .input-group.no-label {
+    padding-bottom: 0 !important;
+}
+
+/* 붙여넣기 필드 (한 줄처럼 보이게) */
+#round-flow #flow-batch-input {
+    background-color: #1e1f22;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    /* 상하 중앙 정렬은 자동으로 되므로 좌우 여백만 설정 */
+    padding: 0 10px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* 콤보박스 크기 및 스타일 */
+#round-flow #flow-round-select {
+    width: 100%;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--highlight);
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* 라벨 스타일 통일 */
+#round-flow .input-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-bottom: 2px;
+    white-space: nowrap;
+}

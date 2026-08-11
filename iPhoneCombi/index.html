@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>특정 번호대 조합도구</title>
+
+    <!-- PWA & iOS Safari 전용 메타 태그 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="조합도구" />
+    <meta name="theme-color" content="#14151c" />
+    <link
+      rel="apple-touch-icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2314151c'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%237c9bff'>🎲</text></svg>"
+    />
+
+    <!-- 외부 .webmanifest 파일 참조로 수정 -->
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <style>
+      :root {
+        --bg: #14151c;
+        --surface: #1b1d27;
+        --surface-alt: #20222e;
+        --border: #2c2f3d;
+        --border-soft: #252734;
+        --text: #e8e9f0;
+        --text-dim: #8a8da3;
+        --accent: #7c9bff;
+        --accent-hover: #95afff;
+        --accent-soft: #2a2f47;
+        --success: #5fd68c;
+        --warn: #ff8a8a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+        font-size: 13px;
+      }
+      .app {
+        max-width: 1110px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .page-title {
+        font-size: 18px;
+        font-weight: 800;
+        margin: 0 0 18px;
+      }
+      .group {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-top: 16px;
+        padding: 20px 16px 16px;
+      }
+      .group-title {
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 13px;
+        margin: -31px 0 14px 6px;
+        background: var(--surface);
+        display: table;
+        padding: 0 8px;
+      }
+      .desc {
+        color: var(--text-dim);
+        font-size: 12px;
+        line-height: 1.5;
+        margin-bottom: 10px;
+      }
+      textarea,
+      .table-wrap {
+        width: 100%;
+        background: var(--surface-alt);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+      }
+      textarea {
+        height: 50px;
+        resize: vertical;
+        padding: 8px 10px;
+        font-size: 20px;
+      }
+      textarea:focus {
+        border-color: var(--accent);
+      }
+      .status-row,
+      .btn-row,
+      .opt-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .status-row {
+        margin-top: 8px;
+      }
+      .btn-row.mt-12 {
+        margin-top: 12px;
+      }
+      .spacer {
+        flex: 1;
+      }
+      button {
+        background: var(--accent);
+        color: #10111a;
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--accent-hover);
+      }
+      button:disabled {
+        background: var(--border);
+        color: #5c5f70;
+        cursor: default;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+      button.secondary:hover {
+        background: var(--surface-alt);
+        color: var(--text);
+        border-color: var(--accent);
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .field label {
+        color: var(--text-dim);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      input[type="number"] {
+        width: 80px;
+        background: var(--surface-alt);
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        padding: 7px 8px;
+        color: var(--text);
+        outline: none;
+      }
+      input[type="number"]:focus {
+        border-color: var(--accent);
+      }
+      .progress {
+        height: 14px;
+        background: var(--surface-alt);
+        border-radius: 7px;
+        overflow: hidden;
+        margin-top: 12px;
+      }
+      .progress-bar {
+        height: 100%;
+        width: 0;
+        background: var(--accent);
+        transition: width 0.08s linear;
+      }
+      #comboStatus {
+        margin: 8px 0;
+        color: var(--success);
+        font-weight: 600;
+      }
+      .table-wrap {
+        overflow: auto;
+        max-height: 480px;
+        margin-top: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        background: var(--surface-alt);
+        color: var(--text-dim);
+        border-bottom: 2px solid var(--accent-soft);
+        padding: 8px 6px;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      tbody tr:nth-child(even) {
+        background: var(--surface);
+      }
+      tbody td {
+        padding: 7px 6px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-soft);
+      }
+      .empty {
+        padding: 35px;
+        text-align: center;
+        color: var(--text-dim);
+      }
+      .bad {
+        color: var(--warn) !important;
+        font-weight: 600;
+      }
+      .ok {
+        color: var(--success) !important;
+        font-weight: 600;
+      }
+      .note {
+        color: var(--text-dim);
+        font-size: 11px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 700px) {
+        .app {
+          padding: 12px;
+        }
+        .opt-row {
+          flex-wrap: wrap;
+        }
+        .group {
+          padding: 16px 12px;
+        }
+        .btn-row {
+          flex-wrap: wrap;
+        }
+      }
+
+      /* iPhone / Safari 모바일 최적화 */
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        background: var(--bg);
+      }
+      body {
+        min-height: 100dvh;
+        padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+        overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .app {
+        width: 100%;
+        max-width: 1110px;
+        margin: 0 auto;
+      }
+      button,
+      input,
+      textarea {
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      button {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+      @media (max-width: 600px) {
+        body {
+          min-height: 100dvh;
+          font-size: 18px;
+        }
+        .app {
+          padding: max(10px, env(safe-area-inset-left))
+            max(10px, env(safe-area-inset-right));
+        }
+        .page-title {
+          font-size: 20px;
+          margin: 4px 2px 14px;
+        }
+        .group {
+          margin-top: 12px;
+          padding: 18px 12px 12px;
+          border-radius: 10px;
+        }
+        .group-title {
+          margin: -29px 0 12px 4px;
+        }
+        .desc {
+          font-size: 13px;
+          line-height: 1.55;
+        }
+        textarea {
+          width: 100%;
+          min-height: 54px;
+          height: 54px;
+          font-size: 16px;
+          line-height: 1.4;
+          padding: 10px;
+        }
+        .status-row {
+          gap: 8px;
+        }
+        .opt-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        .field input[type="number"] {
+          width: 100%;
+          min-height: 44px;
+          font-size: 16px;
+        }
+        .btn-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .btn-row .spacer {
+          display: none;
+        }
+        .btn-row button {
+          width: 100%;
+          padding: 12 10px;
+          white-space: nowrap;
+        }
+        .progress {
+          height: 16px;
+          margin-top: 12px;
+        }
+        #comboStatus {
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .table-wrap {
+          margin-left: -12px;
+          margin-right: -12px;
+          width: calc(100% + 24px);
+          border-left: 0;
+          border-right: 0;
+          border-radius: 0;
+          max-height: 55dvh;
+        }
+        /* 구버전 Safari 호환성 린터 경고 방지를 위한 가드 적용 */
+        @supports (overscroll-behavior: contain) {
+          .table-wrap {
+            overscroll-behavior: contain;
+          }
+        }
+        table {
+          min-width: max-content;
+          font-size: 13px;
+        }
+        thead th {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+          min-width: 48px;
+          height: 42px;
+          padding: 8px 10px;
+        }
+        tbody td {
+          min-width: 48px;
+          height: 40px;
+          padding: 7px 10px;
+        }
+        .note {
+          font-size: 11px;
+          line-height: 1.45;
+        }
+      }
+      @media (max-width: 380px) {
+        .app {
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+        .group {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+        .table-wrap {
+          margin-left: -10px;
+          margin-right: -10px;
+          width: calc(100% + 20px);
+        }
+        .btn-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1 class="page-title">특정 번호대 조합 도구</h1>
+
+      <section class="group">
+        <div class="group-title">① 값 붙여넣기</div>
+        <div class="desc">
+          엑셀 복사값(행/열) 및 직접 작성한 값(쉼표, 탭, 띄어쓰기, 줄바꿈
+          구분)을 모두 지원합니다. 입력 시 자동으로 한 줄로 정렬됩니다.
+        </div>
+        <textarea
+          id="input"
+          placeholder="여기에 붙여넣기 또는 입력 (Ctrl+V)"
+        ></textarea>
+        <div class="status-row">
+          <div id="transposeStatus"></div>
+          <div class="spacer"></div>
+          <button class="secondary" id="clearBtn">초기화</button>
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-title">② 연속 숫자 제외 조합 추출</div>
+        <div class="desc">
+          붙여넣은 순서 기준으로, K개를 뽑을 때 원본 위치상 지정한 길이 이상
+          연달아 뽑힌 조합을 제외합니다. (값의 크기와는 무관)
+        </div>
+
+        <div class="opt-row">
+          <div class="field">
+            <label for="pickCount">선택 개수 (K)</label>
+            <input id="pickCount" type="number" min="1" max="20" value="6" />
+          </div>
+          <div class="field">
+            <label for="maxRun">허용 최대 연속 길이</label>
+            <input id="maxRun" type="number" min="1" max="19" value="2" />
+          </div>
+          <div class="spacer"></div>
+        </div>
+
+        <div class="btn-row mt-12">
+          <button id="runBtn">조합 추출 실행</button>
+          <button class="secondary" id="exportBtn" disabled>
+            엑셀로 내보내기
+          </button>
+          <div class="spacer"></div>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="comboStatus"></div>
+
+        <div class="table-wrap">
+          <table id="resultTable">
+            <thead></thead>
+            <tbody>
+              <tr>
+                <td class="empty">조합을 추출하면 결과가 표시됩니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          화면에는 최대 5,000개만 표시하고, 엑셀 내보내기에서는 전체 결과를
+          저장합니다.
+        </div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+      "use strict";
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          const swCode = `self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));`;
+          const blob = new Blob([swCode], { type: "text/javascript" });
+          navigator.serviceWorker
+            .register(URL.createObjectURL(blob))
+            .catch(() => {});
+        });
+      }
+
+      const state = {
+        parsedValues: [],
+        results: [],
+        pickCount: 6,
+        sortColumn: -1,
+        sortDirection: 1,
+        worker: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function parsePastedValues() {
+        const raw = $("input").value;
+        if (!raw.trim()) {
+          state.parsedValues = [];
+          $("transposeStatus").textContent = "";
+          return;
+        }
+
+        const tokens = raw
+          .split(/[\r\n\t,\s]+/)
+          .map((v) => v.trim())
+          .filter(Boolean);
+
+        const numeric = [];
+        let nonNumeric = 0;
+
+        for (const v of tokens) {
+          const n = Number(v);
+          if (Number.isInteger(n)) numeric.push(n);
+          else nonNumeric++;
+        }
+
+        state.parsedValues = numeric;
+
+        if (numeric.length > 0) {
+          const formatted = numeric.join(", ");
+          if (
+            $("input").value !== formatted &&
+            document.activeElement !== $("input")
+          ) {
+            $("input").value = formatted;
+          }
+        }
+
+        const status = $("transposeStatus");
+        if (nonNumeric > 0) {
+          status.className = "bad";
+          status.textContent = `⚠ 숫자로 인식된 값 ${numeric.length}개 / 숫자가 아닌 값 ${nonNumeric}개는 제외됨`;
+        } else {
+          status.className = "ok";
+          status.textContent = `✔ ${numeric.length}개 값 인식됨`;
+        }
+      }
+
+      function buildWorker() {
+        const workerCode = `
+      self.onmessage = function(e) {
+        const { values, pickCount, maxAllowedRun } = e.data;
+        const results = [];
+        const n = values.length;
+
+        function maxRun(combo) {
+          if (!combo.length) return 0;
+          let max = 1, cur = 1;
+          for (let i = 1; i < combo.length; i++) {
+            if (combo[i] === combo[i-1] + 1) {
+              cur++;
+              if (cur > max) max = cur;
+            } else cur = 1;
+          }
+          return max;
+        }
+
+        function calcAC(combo) {
+          const diffs = new Set();
+          for (let i=0;i<combo.length;i++)
+            for (let j=i+1;j<combo.length;j++)
+              diffs.add(Math.abs(combo[i]-combo[j]));
+          return diffs.size - (combo.length - 1);
+        }
+
+        function calcSD(combo) {
+          const mean = combo.reduce((a,b)=>a+b,0)/combo.length;
+          return Math.sqrt(combo.reduce((s,v)=>s+(v-mean)**2,0)/combo.length);
+        }
+
+        function calcOE(combo) {
+          const odd = combo.filter(v=>v%2!==0).length;
+          return odd + ":" + (combo.length-odd);
+        }
+
+        let processed = 0;
+        let totalEstimate = 1;
+        for(let i=1;i<=pickCount;i++) totalEstimate = totalEstimate * (n-i+1) / i;
+
+        const combo = [];
+
+        function dfs(start) {
+          if (combo.length === pickCount) {
+            processed++;
+            if (maxRun(combo) <= maxAllowedRun) {
+              const valuesCombo = combo.map(i => values[i]);
+              const total = valuesCombo.reduce((a,b)=>a+b,0);
+              results.push([
+                valuesCombo, total, calcAC(valuesCombo),
+                calcSD(valuesCombo), calcOE(valuesCombo)
+              ]);
+            }
+            if (processed % 500 === 0) {
+              self.postMessage({type:"progress", value:Math.min(99,Math.floor(processed/totalEstimate*100))});
+            }
+            return;
+          }
+
+          const need = pickCount - combo.length;
+          for(let i=start; i<=n-need; i++) {
+            combo.push(i);
+            dfs(i+1);
+            combo.pop();
+          }
+        }
+
+        dfs(0);
+        self.postMessage({type:"finished", results});
+      };
+    `;
+        const blob = new Blob([workerCode], { type: "application/javascript" });
+        return new Worker(URL.createObjectURL(blob));
+      }
+
+      function startGenerate() {
+        if (!state.parsedValues.length) {
+          alert("먼저 값을 붙여넣어 주세요.");
+          return;
+        }
+
+        const pickCount = Number($("pickCount").value);
+        const maxRun = Number($("maxRun").value);
+        const poolSize = state.parsedValues.length;
+
+        if (pickCount > poolSize) {
+          alert(
+            `선택 개수(${pickCount})가 붙여넣은 값의 개수(${poolSize})보다 많습니다.`,
+          );
+          return;
+        }
+
+        if (state.worker) state.worker.terminate();
+
+        $("runBtn").disabled = true;
+        $("exportBtn").disabled = true;
+        $("progressBar").style.width = "0%";
+        $("comboStatus").textContent = "조합 생성 중...";
+
+        state.pickCount = pickCount;
+        state.sortColumn = -1;
+        state.sortDirection = 1;
+
+        state.worker = buildWorker();
+
+        state.worker.onmessage = (e) => {
+          if (e.data.type === "progress") {
+            $("progressBar").style.width = e.data.value + "%";
+            return;
+          }
+
+          state.results = e.data.results;
+          $("progressBar").style.width = "100%";
+          $("runBtn").disabled = false;
+          $("exportBtn").disabled = state.results.length === 0;
+
+          $("comboStatus").className = "ok";
+          $("comboStatus").textContent =
+            `✔ 추출 완료: 총 ${state.results.length.toLocaleString()}개 조합`;
+
+          renderTable();
+          state.worker.terminate();
+          state.worker = null;
+        };
+
+        state.worker.onerror = (err) => {
+          $("runBtn").disabled = false;
+          $("comboStatus").className = "bad";
+          $("comboStatus").textContent = "조합 생성 중 오류가 발생했습니다.";
+          console.error(err);
+          state.worker.terminate();
+          state.worker = null;
+        };
+
+        state.worker.postMessage({
+          values: state.parsedValues,
+          pickCount,
+          maxAllowedRun: maxRun,
+        });
+      }
+
+      function compareRows(a, b, col) {
+        let av, bv;
+        if (col < state.pickCount) {
+          av = a[0][col];
+          bv = b[0][col];
+        } else if (col === state.pickCount) {
+          av = a[1];
+          bv = b[1];
+        } else if (col === state.pickCount + 1) {
+          av = a[2];
+          bv = b[2];
+        } else if (col === state.pickCount + 2) {
+          av = a[3];
+          bv = b[3];
+        } else {
+          av = a[4];
+          bv = b[4];
+        }
+
+        if (typeof av === "number" && typeof bv === "number") return av - bv;
+        return String(av).localeCompare(String(bv), "ko");
+      }
+
+      function renderTable() {
+        const table = $("resultTable");
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
+
+        const headers = [];
+        for (let i = 0; i < state.pickCount; i++) headers.push(`num${i + 1}`);
+        headers.push("합계", "AC", "SD", "홀:짝");
+
+        thead.innerHTML =
+          "<tr>" +
+          headers
+            .map(
+              (h, i) =>
+                `<th data-col="${i}">${h}${state.sortColumn === i ? (state.sortDirection === 1 ? " ▲" : " ▼") : ""}</th>`,
+            )
+            .join("") +
+          "</tr>";
+
+        thead.querySelectorAll("th").forEach((th) => {
+          th.addEventListener("click", () => {
+            const col = Number(th.dataset.col);
+            if (state.sortColumn === col) state.sortDirection *= -1;
+            else {
+              state.sortColumn = col;
+              state.sortDirection = 1;
+            }
+            renderTable();
+          });
+        });
+
+        let rows = state.results;
+        if (state.sortColumn !== -1) {
+          rows = [...rows].sort(
+            (a, b) => compareRows(a, b, state.sortColumn) * state.sortDirection,
+          );
+        }
+
+        const displayLimit = 5000;
+        const display = rows.slice(0, displayLimit);
+
+        if (!display.length) {
+          tbody.innerHTML =
+            '<tr><td class="empty" colspan="' +
+            headers.length +
+            '">결과가 없습니다.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = display
+          .map((row) => {
+            const [combo, total, ac, sd, oe] = row;
+            return (
+              "<tr>" +
+              combo.map((v) => `<td>${v}</td>`).join("") +
+              `<td>${total}</td><td>${ac}</td><td>${sd.toFixed(2)}</td><td>${oe}</td>` +
+              "</tr>"
+            );
+          })
+          .join("");
+
+        if (state.results.length > displayLimit) {
+          $("comboStatus").textContent =
+            `✔ 추출 완료: 총 ${state.results.length.toLocaleString()}개 (화면엔 ${displayLimit.toLocaleString()}개만 표시, 전체는 엑셀로 확인)`;
+        }
+      }
+
+      function exportExcel() {
+        if (!state.results.length) return;
+
+        if (typeof XLSX === "undefined") {
+          alert(
+            "엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.",
+          );
+          return;
+        }
+
+        let rows = [...state.results];
+        if (state.sortColumn !== -1) {
+          rows.sort(
+            (a, b) => compareRows(a, b, state.sortColumn) * state.sortDirection,
+          );
+        }
+
+        const headers = [];
+        for (let i = 0; i < state.pickCount; i++) headers.push(`num${i + 1}`);
+        headers.push("합계", "AC", "SD", "홀:짝");
+
+        const data = [headers];
+        for (const [combo, total, ac, sd, oe] of rows) {
+          data.push([...combo, total, ac, Number(sd.toFixed(2)), oe]);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "combinations");
+        XLSX.writeFile(wb, "combinations.xlsx");
+      }
+
+      $("input").addEventListener("input", parsePastedValues);
+      $("input").addEventListener("blur", () => {
+        if (state.parsedValues.length > 0) {
+          $("input").value = state.parsedValues.join(", ");
+        }
+      });
+      $("clearBtn").addEventListener("click", () => {
+        $("input").value = "";
+        state.parsedValues = [];
+        $("transposeStatus").textContent = "";
+        $("comboStatus").textContent = "";
+      });
+      $("runBtn").addEventListener("click", startGenerate);
+      $("exportBtn").addEventListener("click", exportExcel);
+    </script>
+  </body>
+</html>

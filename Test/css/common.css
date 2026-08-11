@@ -1,0 +1,293 @@
+/* 1. 전역 변수 및 초기화 */
+:root {
+    --primary-bg: #020617;
+    /* 깊은 배경색 */
+    --sidebar-bg: #0f172a;
+    /* 사이드바/상단바 */
+    --card-bg: #1e293b;
+    /* 카드 요소 배경 */
+    --accent-blue: #3b82f6;
+    /* 포인트 컬러 */
+    --text-main: #f1f5f9;
+    /* 주 텍스트 */
+    --text-muted: #94a3b8;
+    /* 보조 텍스트 */
+    --border-color: #334155;
+    /* 경계선 */
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    /* 모바일 터치 하이라이트 제거 */
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--primary-bg);
+    color: var(--text-main);
+}
+
+/* 2. 레이아웃 엔진 */
+.app-container {
+    display: flex;
+    max-width: 1440px;
+    /* PC에서 너무 퍼지지 않게 방지 */
+    margin: 0 auto;
+    /* PC 화면 중앙 정렬 */
+    min-height: 100vh;
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+/* 3. 사이드바 (PC 버전) */
+.sidebar {
+    width: 280px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    /* 너비 고정 */
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+    margin-bottom: 30px;
+    letter-spacing: -0.05em;
+}
+
+.file-input {
+    margin-bottom: 25px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* 탭 네비게이션 */
+.tab-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 14px 18px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.tab-btn.active {
+    background: var(--accent-blue);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.insight-area {
+    margin-top: auto;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    font-size: 0.85rem;
+    color: #38bdf8;
+    line-height: 1.6;
+}
+
+/* 4. 메인 콘텐츠 영역 */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    background-color: var(--primary-bg);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 5. UI 컴포넌트 (KPI 카드 및 차트) */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.kpi-card {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+
+.kpi-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.kpi-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.chart-box {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+    height: 420px;
+    /* PC 차트 높이 */
+    width: 100%;
+}
+
+/* 6. 공(Ball) 디자인 */
+.ball-display {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.ball {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 공 색상 범위 */
+.range-1 {
+    background-color: #facc15;
+    color: #854d0e;
+}
+
+.range-10 {
+    background-color: #3b82f6;
+}
+
+.range-20 {
+    background-color: #ef4444;
+}
+
+.range-30 {
+    background-color: #64748b;
+}
+
+.range-40 {
+    background-color: #22c55e;
+}
+
+/* 7. 모바일 최적화 (반응형 쿼리) */
+@media (max-width: 1024px) {
+    .app-container {
+        flex-direction: column;
+        max-width: 100%;
+        border: none;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+        padding-top: env(safe-area-inset-top);
+        /* 아이폰 노치 보호 */
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .tab-navigation {
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+        gap: 8px;
+        -webkit-overflow-scrolling: touch;
+        /* 부드러운 스크롤 */
+    }
+
+    /* 모바일에서 탭 버튼 가로 스크롤 가능하게 */
+    .tab-btn {
+        flex: 0 0 auto;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    .main-content {
+        padding: 20px 15px;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        /* 모바일은 무조건 한 줄 */
+        gap: 15px;
+    }
+
+    .chart-box {
+        height: 320px;
+        /* 모바일 차트 높이 최적화 */
+        padding: 15px;
+        border-radius: 14px;
+    }
+
+    .ball {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+}

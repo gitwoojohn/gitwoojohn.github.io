@@ -1,0 +1,703 @@
+/* ============================================================================
+   CSS VARIABLES
+   ========================================================================= */
+:root {
+    --bg: #0d1117;
+    --side: #161b22;
+    --card: #21262d;
+    --accent: #58a6ff;
+    --highlight: #f2cc60;
+    --text: #c9d1d9;
+    --border: #30363d;
+    --color-1: #f2cc60;
+    --color-10: #58a6ff;
+    --color-20: #ff7b72;
+    --color-30: #8b949e;
+    --color-40: #3fb950;
+}
+
+/* ============================================================================
+   BASE & LAYOUT
+   ========================================================================= */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Pretendard', sans-serif;
+    margin: 0;
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* ============================================================================
+   SIDEBAR
+   ========================================================================= */
+.sidebar {
+    width: 320px;
+    background: var(--side);
+    border-right: 1px solid var(--border);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 30px;
+}
+
+/* Report Panel */
+.report-panel {
+    margin-top: 25px;
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.report-content {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #8b949e;
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA
+   ========================================================================= */
+.main-content {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.top-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    align-items: stretch;
+}
+
+/* ============================================================================
+   BUTTONS
+   ========================================================================= */
+.btn-primary {
+    display: block;
+    background: var(--accent);
+    color: #fff;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ============================================================================
+   RESULT CARD SECTION
+   ========================================================================= */
+.result-card {
+    flex: 2;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2vh 30px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.card-label {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: var(--accent);
+    color: #000;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 4px;
+}
+
+.result-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* ============================================================================
+   LOTTERY BALLS
+   ========================================================================= */
+.balls-container {
+    display: flex;
+    gap: 12px;
+}
+
+.ball {
+    width: 52px;
+    height: 52px;
+    background: #0d1117;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* Ball Range Colors */
+.ball.range-1 {
+    border-color: var(--color-1);
+    color: var(--color-1);
+}
+
+.ball.range-10 {
+    border-color: var(--color-10);
+    color: var(--color-10);
+}
+
+.ball.range-20 {
+    border-color: var(--color-20);
+    color: var(--color-20);
+}
+
+.ball.range-30 {
+    border-color: var(--color-30);
+    color: var(--color-30);
+}
+
+.ball.range-40 {
+    border-color: var(--color-40);
+    color: var(--color-40);
+}
+
+.ball.empty {
+    color: #30363d;
+    border-color: #30363d;
+}
+
+/* ============================================================================
+   SUM DISPLAY
+   ========================================================================= */
+.sum-display {
+    text-align: center;
+    padding-left: 40px;
+    border-left: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 120px;
+}
+
+.sum-label {
+    font-size: 0.95rem;
+    color: #8b949e;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+#total-sum {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+}
+
+#sum-badge {
+    font-size: 0.85rem;
+    background: #30363d;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* ============================================================================
+   BADGES
+   ========================================================================= */
+.badge-good {
+    background: rgba(63, 185, 80, 0.2) !important;
+    color: #3fb950 !important;
+    font-weight: bold;
+}
+
+label.badge-good {
+    display: block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+    width: fit-content;
+}
+
+/* ============================================================================
+   KPI CARDS
+   ========================================================================= */
+.kpi-grid {
+    flex: 1;
+    display: grid;
+    gap: 15px;
+}
+
+.kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1vh;
+}
+
+.kpi-card label {
+    font-size: 0.30rem;
+    color: #8b949e;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.kpi-card span {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+/* ============================================================================
+   CHARTS
+   ========================================================================= */
+.chart-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.chart-container h4 {
+    text-align: center;
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+canvas {
+    max-height: 220px;
+    width: 100% !important;
+}
+
+/* ============================================================================
+   TAB NAVIGATION
+   ========================================================================= */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+}
+
+.tab-btn {
+    background: transparent;
+    color: var(--text);
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: var(--accent);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+}
+
+/* ============================================================================
+   PATTERN SEARCH INPUT
+   ========================================================================= */
+.pattern-input-area {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.pattern-input-area h3 {
+    align-self: flex-end;
+    /* ← 이 요소만 하단 정렬 */
+    margin: 0 0 10px 0;
+    /* 기본 margin 제거 */
+}
+
+.pattern-input-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(60px, 100px));
+    gap: 8px;
+    margin-bottom: 5px;
+    justify-content: center;
+    flex: 1;
+}
+
+.pattern-input-grid>button {
+    margin-top: auto;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-align: center;
+}
+
+.input-group input {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    transition: border-color 0.3s;
+    width: 100%;
+    max-width: 80px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+#searchPattern {
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+#csvFile,
+.file-input {
+    display: none;
+}
+
+/* ============================================================================
+   PATTERN SEARCH RESULTS
+   ========================================================================= */
+.pattern-results {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.pattern-results h3 {
+    color: var(--text);
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+#result-count {
+    color: var(--accent);
+    font-weight: 800;
+}
+
+/* Result List Container */
+.result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg);
+}
+
+/* Custom Scrollbar Styling (Webkit) */
+.result-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.result-list::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 10px;
+}
+
+.result-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.result-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ============================================================================
+   RESULT ITEMS
+   ========================================================================= */
+.result-wrapper {
+    margin-bottom: 10px;
+}
+
+.result-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.3s;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.result-item:hover {
+    border-color: var(--accent);
+    background: rgba(88, 166, 255, 0.05);
+}
+
+/* Result Item Info */
+.result-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.result-round {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 80px;
+}
+
+.result-date {
+    color: #8b949e;
+    font-size: 0.9rem;
+}
+
+/* Result Numbers Display */
+.result-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+.result-ball {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 2px solid var(--border);
+}
+
+.result-ball.bonus {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+/* Result Ball Colors by Range */
+.result-ball.range-1 {
+    border-color: var(--color-1);
+    color: var(--color-1);
+}
+
+.result-ball.range-10 {
+    border-color: var(--color-10);
+    color: var(--color-10);
+}
+
+.result-ball.range-20 {
+    border-color: var(--color-20);
+    color: var(--color-20);
+}
+
+.result-ball.range-30 {
+    border-color: var(--color-30);
+    color: var(--color-30);
+}
+
+.result-ball.range-40 {
+    border-color: var(--color-40);
+    color: var(--color-40);
+}
+
+/* Divider & Sum Value */
+.divider {
+    color: #8b949e;
+    font-size: 1.2rem;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.sum-value {
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+}
+
+/* Result Pattern Display */
+.result-pattern {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #8b949e;
+}
+
+.result-pattern span {
+    background: rgba(88, 166, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* ============================================================================
+   EXPANDABLE NEXT ROUND INFO
+   ========================================================================= */
+.expand-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.next-round-info {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 8px 8px;
+    margin-top: -8px;
+}
+
+.next-round-info.expanded {
+    max-height: 250px;
+    padding: 15px 20px;
+    border: 1px solid var(--border);
+    border-top: none;
+}
+
+/* Next Round Header */
+.next-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.next-label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.next-round-num {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.next-date {
+    color: #8b949e;
+    font-size: 0.85rem;
+    margin-right: 10px;
+}
+
+/* Pattern Comparison */
+.pattern-compare {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.pattern-label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.pattern-item {
+    background: rgba(88, 166, 255, 0.15);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #c9d1d9;
+    border: 1px solid rgba(88, 166, 255, 0.3);
+}
+
+.pattern-item strong {
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-left: 4px;
+}
+
+.pattern-input-area h3,
+.pattern-results h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 아이콘과 텍스트 사이 간격 */
+}
+
+.pattern-input-area h3 svg,
+.pattern-results h3 svg {
+    color: var(--accent);
+    /* currentColor를 사용하면 이 색상 적용 */
+    flex-shrink: 0;
+    /* 아이콘 크기 고정 */
+}

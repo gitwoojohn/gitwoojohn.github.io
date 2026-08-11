@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>로또 분석 시스템 - 테스트 프로젝트</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="css/common.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">LOTTO LAB AI</div>
+
+            <div class="upload-section">
+                <input type="file" id="csvFile" accept=".csv" class="file-input">
+            </div>
+
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="analysis">전체 분석</button>
+                <button class="tab-btn" data-tab="pattern">패턴 분석</button>
+                <button class="tab-btn" data-tab="pattern-stats-add">이월합 분석</button>
+                <button class="tab-btn" data-tab="pattern-stats-multiple">이월곱 분석</button>
+            </nav>
+
+            <div id="insight-content" class="insight-area">
+                <div id="report-text">데이터를 불러오는 중입니다...</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="analysis" class="tab-content active">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">미출현 임계 번호</div>
+                        <div id="kpi-skip-count" class="kpi-value">-</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">최고 궁합수</div>
+                        <div id="kpi-max-pair" class="kpi-value">-</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">AI 추천 조합 (합계: <span id="total-sum">0</span> <span id="sum-badge"></span>)
+                        </div>
+                        <div id="recommend-numbers" class="ball-display"></div>
+                    </div>
+                </div>
+
+                <div class="chart-box"><canvas id="skipChart"></canvas></div>
+                <div class="chart-box"><canvas id="pairChart"></canvas></div>
+                <div class="chart-box"><canvas id="endingChart"></canvas></div>
+            </section>
+
+            <section id="pattern" class="tab-content">
+                <div id="pattern-list" class="placeholder">패턴 분석 결과가 여기에 표시됩니다.</div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/tab-analysis.js"></script>
+
+</body>
+
+</html>

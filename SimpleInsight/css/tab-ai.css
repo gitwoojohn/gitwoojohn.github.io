@@ -1,0 +1,18 @@
+/* ============================================================================
+   AI TAB
+   ========================================================================= */
+.ai-section {
+  padding: 40px;
+  text-align: center;
+}
+
+.ai-section h2 {
+  color: var(--text);
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.ai-section p {
+  color: #8b949e;
+  font-size: 1.1rem;
+}

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotto Strategy Intelligence Pro</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tab-analysis.css">
+    <link rel="stylesheet" href="css/tab-pattern.css">    
+    <link rel="stylesheet" href="css/tab-stats.css">
+    <link rel="stylesheet" href="css/tab-pattern-search.css">
+    <link rel="stylesheet" href="css/tab-round-flow.css">
+    <link rel="stylesheet" href="css/tab-analysis-sum.css">
+    <link rel="stylesheet" href="css/tab-carryover.css">
+    <link rel="stylesheet" href="css/tab-total-list.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+</head>
+
+<body>
+    <button type="button" id="sidebar-toggle" class="btn-toggle" aria-label="사이드바 토글">
+        <span class="icon">☰</span>
+    </button>
+    <div class="app-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div class="brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span>Lotto645 패턴 분석</span>
+            </div>
+            <div class="upload-area">
+                <label for="csvFile" class="btn-primary"> CSV 불러오기 </label>
+                <input type="file" id="csvFile" accept=".csv" class="file-input">
+            </div>
+            <div class="report-panel">
+                <h3>분석 리포트</h3>
+                <div id="insight-content" class="insight-container">
+                    <p class="placeholder-text">패턴을 검색하면 다음 회차 분석 결과가 여기에 표시됩니다.</p>
+                </div>
+                <div id="report-text" class="report-content">데이터를 불러오세요.</div>
+            </div>
+            <!-- <div class="weight-info"><span>궁합 0.4 · 미출 0.3 · 끝수 0.2</span></div> -->
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <!-- 탭 네비게이션 -->
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="analysis" type="button">챠트</button>
+                <button class="tab-btn" data-tab="pattern" type="button">패턴분석</button>
+                <button class="tab-btn" data-tab="pattern-stats-add" type="button">이월합</button>
+                <button class="tab-btn" data-tab="pattern-stats-multiple" type="button">이월곱</button>
+                <button class="tab-btn" data-tab="custom-search" type="button">회차/합계</button>
+                <button class="tab-btn" data-tab="round-flow" type="button">회차분석</button>
+                <button class="tab-btn" data-tab="total-search-pattern" type="button">개별번호</button>
+                <button class="tab-btn" data-tab="tab-analysis-sum" type="button">합계예측</button>
+                <button class="tab-btn" data-tab="tab-carryover" type="button">이월분석</button>
+                <button class="tab-btn" data-tab="tab-total-list" type="button">전체목록</button>
+            </nav>
+
+
+            <!-- 전체 분석 탭 -->
+            <div id="analysis" class="tab-content active">
+                <section class="top-row">
+                    <div class="result-card">
+                        <div class="card-label">AI 추천 번호</div>
+                        <div class="result-layout">
+                            <div id="recommend-numbers" class="balls-container">
+                                <span class="ball empty">?</span><span class="ball empty">?</span>
+                                <span class="ball empty">?</span><span class="ball empty">?</span>
+                                <span class="ball empty">?</span><span class="ball empty">?</span>
+                            </div>
+                            <div class="sum-display">
+                                <span class="sum-label">합계</span>
+                                <div id="total-sum">0</div>
+                                <div id="sum-badge">⚠</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <label class="badge-good">미출현 임계(15회+) 번호</label>
+                            <span id="kpi-skip-count">-</span>
+                        </div>
+                        <div class="kpi-card">
+                            <label class="badge-good">최고 궁합수 빈도</label>
+                            <span id="kpi-max-pair">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="chart-section">
+                    <div class="chart-container span-2">
+                        <h4>장기 미출현 번호</h4>
+                        <canvas id="skipChart"></canvas>
+                    </div>
+                    <div class="chart-container span-2">
+                        <h4>궁합 Top 15</h4>
+                        <canvas id="pairChart"></canvas>
+                    </div>
+                    <div class="chart-container span-2">
+                        <h4>끝수 분포 (Ending Digit)</h4>
+                        <canvas id="endingChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 구간 패턴 탭 -->
+            <div id="pattern" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3><!-- 패턴 입력 영역 -->
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor"
+                                    stroke-width="2" />
+                            </svg>구간 패턴 검색 :
+                        </h3>
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="range-1-9">1-9</label>
+                                <input type="number" id="range-1-9" min="0" max="6" value="1" aria-label="1-9 구간 개수">
+                            </div>
+                            <div class="input-group">
+                                <label for="range-10-19">10-19</label>
+                                <input type="number" id="range-10-19" min="0" max="6" value="1"
+                                    aria-label="10-19 구간 개수">
+                            </div>
+                            <div class="input-group">
+                                <label for="range-20-29">20-29</label>
+                                <input type="number" id="range-20-29" min="0" max="6" value="1"
+                                    aria-label="20-29 구간 개수">
+                            </div>
+                            <div class="input-group">
+                                <label for="range-30-39">30-39</label>
+                                <input type="number" id="range-30-39" min="0" max="6" value="2"
+                                    aria-label="30-39 구간 개수">
+                            </div>
+                            <div class="input-group">
+                                <label for="range-40-45">40-45</label>
+                                <input type="number" id="range-40-45" min="0" max="6" value="1"
+                                    aria-label="40-45 구간 개수">
+                            </div>
+                            <button id="searchPattern" class="btn-primary" type="button" aria-label="구간 패턴 검색 실행">패턴
+                                검색</button>
+                        </div>
+                    </div>
+
+                    <!-- 검색 결과 영역 -->
+                    <div class="pattern-results">
+                        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>검색 결과 <span id="result-count">0</span>건</h3>
+                        <div id="pattern-list" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 이월합 분석 탭 -->
+            <div id="pattern-stats-add" class="tab-content">
+                <section class="pattern-analysis-section">
+                    <div class="pattern-stats-grid">
+                        <div class="stat-card">
+                            <h3>총 분석 회차</h3>
+                            <div class="stat-value" id="total-rounds">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>가장 많이 나온 패턴</h3>
+                            <div class="stat-value" id="most-common-pattern">-</div>
+                            <div class="stat-detail" id="pattern-frequency">0회</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div id="pattern-stats-multiple" class="tab-content">
+                <!-- JS에서 동적으로 내용이 채워집니다 -->
+            </div>
+
+            <div id="custom-search" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor"
+                                    stroke-width="2" />
+                            </svg>회차 및 합계 검색 :
+                        </h3>
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="search-round">기준 회차</label>
+                                <input type="number" id="search-round" placeholder="회차 입력">
+                            </div>
+                            <div class="input-group">
+                                <label for="search-total-sum">목표 합계</label>
+                                <input type="number" id="search-total-sum" placeholder="합계 입력">
+                            </div>
+                            <button id="btn-custom-search" class="btn-primary" type="button">데이터 검색</button>
+                            <button id="btn-sort-toggle" class="btn-primary" type="button" data-sort="desc">▼
+                                최신순</button>
+                        </div>
+                    </div>
+                    <div class="pattern-results">
+                        <h3>검색 결과 <span id="custom-result-count">0</span>건</h3>
+                        <div id="custom-search-list" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 회차/흐름 분석  -->
+            <div id="round-flow" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor"
+                                    stroke-width="2" />
+                            </svg>분석 회차 :
+                        </h3>
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="flow-round-input">기준 회차</label>
+                                <input type="number" id="flow-round-input" placeholder="회차 입력" min="1">
+                            </div>
+
+                            <div class="input-group no-label">
+                                <button id="search-flow-btn" class="btn-primary" type="button">흐름 분석 실행</button>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="flow-round-select">회차 빠른 선택</label>
+                                <select id="flow-round-select">
+                                    <option value="">목록 없음</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="flow-batch-input">회차 목록 복사/붙여넣기</label>
+                                <input type="text" id="flow-batch-input" placeholder="숫자들을 붙여넣으세요..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pattern-results">
+                        <div id="flow-result-container" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 출현번호  검색 탭 -->
+            <div id="total-search-pattern" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor"
+                                    stroke-width="2" />
+                            </svg>검색
+                        </h3>
+
+                        <!-- 구간검색 기능 추가 -->
+                        <div class="search-mode-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="range-search-check" title="입력한 번호가 속한 10단위 구간 전체를 검색합니다.">
+                                <span>구간전체검색</span>
+                            </label>
+                        </div>
+
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="num1">1번</label>
+                                <input type="number" id="num1" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="num2">2번</label>
+                                <input type="number" id="num2" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="num3">3번</label>
+                                <input type="number" id="num3" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="num4">4번</label>
+                                <input type="number" id="num4" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="num5">5번</label>
+                                <input type="number" id="num5" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="num6">6번</label>
+                                <input type="number" id="num6" min="1" max="45" placeholder="번호">
+                            </div>
+                            <div class="input-group">
+                                <label for="bonus">보너스</label>
+                                <input type="number" id="bonus" min="1" max="45" placeholder="번호">
+                            </div>
+                            <button id="pattern-search-btn" class="btn-primary" type="button">패턴 검색</button>
+                        </div>
+                    </div>
+
+                    <div class="pattern-results">
+                        <h3>검색 결과 <span id="total-result-count">0</span>건</h3>
+                        <div id="pattern-result-container" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- AI 합계 분석 탭 -->
+            <div id="tab-analysis-sum" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg> 합계 기반 다음 회차 예측
+                        </h3>
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="target-sum-input">기준 합계 입력</label>
+                                <input type="number" id="target-sum-input" value="150" min="21" max="255">
+                            </div>
+                            <button id="btn-run-sum-analysis" class="btn-primary" type="button">분석 및 예측 실행</button>
+                        </div>
+                    </div>
+
+                    <!-- <div class="pattern-results">
+                    <h3>출현 확률 TOP 6 번호</h3>
+                    <div id="ai-sum-probability-result" class="result-list"></div>
+        
+                    <h3 style="margin-top:30px;">동일 합계 출현 히스토리 (클릭 시 상세 패턴)</h3>
+                    <div id="sum-round-archive" class="result-list"></div>
+                </div> -->
+                    <div class="pattern-results">
+                        <div class="probability-header-row">
+                            <h3>출현 확률 TOP 6 번호</h3>
+                            <div id="ai-sum-probability-result" class="result-list"></div>
+                        </div>
+                        <div>
+                            <h3>동일 합계 출현 히스토리 (클릭 시 상세 패턴)</h3>
+                            <div id="sum-round-archive" class="result-list"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 이월 분석 탭 -->
+            <div id="tab-carryover" class="tab-content">
+                <section class="pattern-section">
+                    <div class="search-input-container">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>이월 번호(Carry-over) 패턴 분석 :
+                        </h3>
+                        <div class="pattern-input-grid">
+                            <div class="input-group">
+                                <label for="co-start-round">시작 회차</label>
+                                <input type="number" id="co-start-round" placeholder="1">
+                            </div>
+                            <div class="input-group">
+                                <label for="co-end-round">종료 회차</label>
+                                <input type="number" id="co-end-round" placeholder="최신">
+                            </div>
+                            <div class="input-group">
+                                <label for="co-count-select">이월 개수</label>
+                                <select id="co-count-select">
+                                    <option value="1">1개 이월</option>
+                                    <option value="2">2개 이월</option>
+                                    <option value="3">3개 이상 이월</option>
+                                </select>
+                            </div>
+                            <div class="input-group checkbox-container">
+                                <input type="checkbox" id="co-include-bonus">
+                                <label for="co-include-bonus">보너스 포함</label>
+                            </div>
+                            <div class="input-group button-container">
+                                <button id="btn-run-carryover" class="btn-primary" type="button">패턴 분석 실행</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pattern-results">
+                        <h3>분석 결과 <span id="carryover-count-badge">0</span>건</h3>
+                        <div id="carryover-result-list" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 전체 회차 탭 -->
+            <div id="tab-total-list" class="tab-content">
+                <section class="total-list-section">
+                    <div class="list-header">
+                        <h3>전체 회차 당첨 목록</h3>
+                        <div class="search-control">
+                            <label for="round-search-input">검색회차:</label>
+                            <input type="number" id="round-search-input" placeholder="회차 입력" aria-label="조회할 회차 번호 입력">
+                            <button type="button" id="round-search-btn" class="btn-search">검색</button>
+                            <button type="button" id="search-reset-btn" class="btn-reset">초기화</button>
+                        </div>
+                        <button id="sort-toggle-btn" class="btn-secondary" type="button">최신순 보기 ↓</button>
+                    </div>
+                    <div class="pattern-results">
+                        <p class="result-count-text">조회 결과: <span id="total-list-count">0</span>건</p>
+                        <div id="total-list-container" class="result-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- <script src="script.js"></script> -->
+            <script src="js/common.js"></script>
+            <script src="js/tab-analysis.js"></script>
+            <script src="js/tab-pattern.js"></script>
+            <script src="js/tab-stats.js"></script>
+            <script src="js/tab-analysis-sum.js"></script>
+            <script src="js/tab-stats-multi.js"></script>
+            <script src="js/tab-pattern-search.js"></script>
+            <script src="js/tab-custom-search.js"></script>
+            <script src="js/tab-round-flow.js"></script>
+            <script src="js/tab-carryover.js"></script>
+            <script src="js/tab-total-list.js"></script>
+
+
+
+
+</body>
+
+</html>

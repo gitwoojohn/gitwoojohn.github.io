@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/", "destination": "/WebPatternMaster/index.html" },
+    { "source": "/:path*", "destination": "/WebPatternMaster/:path*" }
+  ]
+}

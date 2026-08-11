@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+
+    <title>Lotto Pro Mobile</title>
+
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/main-chart.css">
+    <link rel="stylesheet" href="css/tab-analysis.css">
+    <link rel="stylesheet" href="css/tab-pattern.css">
+    <link rel="stylesheet" href="css/tab-stats.css">
+    <link rel="stylesheet" href="css/tab-analysis-sum.css">
+    <link rel="stylesheet" href="css/tab-pattern-search.css">
+    <link rel="stylesheet" href="css/tab-carryover.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span>Lotto Pro</span>
+            </div>
+            <label for="csvFile" class="header-btn upload-btn" title="CSV 파일 업로드">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span class="upload-label">CSV</span>
+            </label>
+            <input type="file" id="csvFile" accept=".csv" title="CSV 파일 선택">
+        </div>
+
+        <nav class="scroll-nav">
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="main-chart" type="button">메인차트</button>
+                <button class="tab-btn" data-tab="pattern-analysis" type="button">패턴분석</button>
+                <button class="tab-btn" data-tab="carryover-sum" type="button">이월합</button>
+                <button class="tab-btn" data-tab="carryover-product" type="button">이월곱</button>
+                <button class="tab-btn" data-tab="round-sum" type="button">회차/합계</button>
+                <button class="tab-btn" data-tab="round-flow" type="button">회차흐름</button>
+                <button class="tab-btn" data-tab="number-appearance" type="button">출현번호</button>
+                <button class="tab-btn" data-tab="sum-prediction" type="button">합계예측</button>
+                <button class="tab-btn" data-tab="carryover-analysis" type="button">이월분석</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+
+        <div class="report-panel-mobile">
+            <div id="report-text" class="report-content">우측 상단 'CSV' 버튼을 눌러 데이터를 불러오세요.</div>
+        </div>
+
+        <div id="main-chart" class="tab-content active">
+            <section class="top-row">
+                <div class="result-card">
+                    <div class="card-label">AI 추천 번호</div>
+                    <div class="result-layout">
+                        <div id="recommend-numbers" class="balls-container">
+                            <span class="ball empty">?</span><span class="ball empty">?</span>
+                            <span class="ball empty">?</span><span class="ball empty">?</span>
+                            <span class="ball empty">?</span><span class="ball empty">?</span>
+                        </div>
+                        <div class="sum-display">
+                            <span class="sum-label">합계</span>
+                            <div id="total-sum">0</div>
+                            <div id="sum-badge">⚠</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span class="badge-good">미출현 (15회+)</span>
+                        <span id="kpi-skip-count">-</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="badge-good">최고 궁합수</span>
+                        <span id="kpi-max-pair">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="chart-section">
+                <div class="chart-container">
+                    <h4>장기 미출현 번호</h4>
+                    <canvas id="skipChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h4>궁합 Top 15</h4>
+                    <canvas id="pairChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h4>끝수 분포</h4>
+                    <canvas id="endingChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <div id="pattern-analysis" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>구간 패턴 검색</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="range-1-9">1-9</label>
+                            <input type="number" id="range-1-9" value="1" placeholder="개수" title="1-9 구간">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-10-19">10-19</label>
+                            <input type="number" id="range-10-19" value="1" placeholder="개수" title="10-19 구간">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-20-29">20-29</label>
+                            <input type="number" id="range-20-29" value="1" placeholder="개수" title="20-29 구간">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-30-39">30-39</label>
+                            <input type="number" id="range-30-39" value="2" placeholder="개수" title="30-39 구간">
+                        </div>
+                        <div class="input-group">
+                            <label for="range-40-45">40-45</label>
+                            <input type="number" id="range-40-45" value="1" placeholder="개수" title="40-45 구간">
+                        </div>
+                        <button id="searchPattern" class="btn-primary" type="button">패턴 검색</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <h3>검색 결과 <span id="result-count">0</span>건</h3>
+                    <div id="pattern-list" class="result-list"></div>
+                </div>
+            </section>
+        </div>
+
+        <div id="carryover-sum" class="tab-content">
+            <section class="pattern-analysis-section">
+                <div class="pattern-stats-grid">
+                    <div class="stat-card">
+                        <h3>총 분석 회차</h3>
+                        <div class="stat-value" id="total-rounds">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>최빈 패턴</h3>
+                        <div class="stat-value" id="most-common-pattern">-</div>
+                        <div class="stat-detail" id="pattern-frequency">0회</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h4>패턴별 출현 빈도</h4>
+                    <canvas id="patternChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <div id="carryover-product" class="tab-content">
+            <section class="pattern-analysis-section">
+                <div class="pattern-results">
+                    <p class="empty-message">이월곱 분석 내용</p>
+                </div>
+            </section>
+        </div>
+
+        <div id="round-sum" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>회차 및 합계 검색</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="search-round">기준 회차</label>
+                            <input type="number" id="search-round" placeholder="예: 1000" title="기준 회차">
+                        </div>
+                        <div class="input-group">
+                            <label for="search-total-sum">목표 합계</label>
+                            <input type="number" id="search-total-sum" placeholder="예: 130" title="목표 합계">
+                        </div>
+                        <button id="btn-custom-search" class="btn-primary" type="button">검색</button>
+                        <button id="btn-sort-toggle" class="btn-primary" type="button" data-sort="desc">▼ 최신순
+                            정렬</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <h3>결과 <span id="custom-result-count">0</span>건</h3>
+                    <div id="custom-search-list" class="result-list"></div>
+                </div>
+            </section>
+        </div>
+
+        <div id="round-flow" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>흐름 분석</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="flow-round-input">기준 회차</label>
+                            <input type="number" id="flow-round-input" placeholder="회차 입력" min="1" title="기준 회차">
+                        </div>
+                        <button id="search-flow-btn" class="btn-primary" type="button">분석 실행</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <div id="flow-result-container" class="result-list"></div>
+                </div>
+            </section>
+        </div>
+
+        <div id="number-appearance" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>번호 조합 검색</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group"><label for="num1">1번</label><input type="number" id="num1"
+                                placeholder="NO" title="번호 1"></div>
+                        <div class="input-group"><label for="num2">2번</label><input type="number" id="num2"
+                                placeholder="NO" title="번호 2"></div>
+                        <div class="input-group"><label for="num3">3번</label><input type="number" id="num3"
+                                placeholder="NO" title="번호 3"></div>
+                        <div class="input-group"><label for="num4">4번</label><input type="number" id="num4"
+                                placeholder="NO" title="번호 4"></div>
+                        <div class="input-group"><label for="num5">5번</label><input type="number" id="num5"
+                                placeholder="NO" title="번호 5"></div>
+                        <div class="input-group"><label for="num6">6번</label><input type="number" id="num6"
+                                placeholder="NO" title="번호 6"></div>
+                        <div class="input-group"><label for="bonus">보너스</label><input type="number" id="bonus"
+                                placeholder="NO" title="보너스"></div>
+                        <button id="pattern-search-btn" class="btn-primary" type="button">번호 검색</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <h3>결과 <span id="total-result-count">0</span>건</h3>
+                    <div id="pattern-result-container" class="result-list"></div>
+                </div>
+            </section>
+        </div>
+
+        <div id="sum-prediction" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>합계 예측</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="target-sum-input">기준 합계</label>
+                            <input type="number" id="target-sum-input" value="150" placeholder="합계" title="기준 합계">
+                        </div>
+                        <button id="btn-run-sum-analysis" class="btn-primary" type="button">예측 실행</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <div class="probability-header-row">
+                        <h3>출현 확률 TOP 6</h3>
+                        <div id="ai-sum-probability-result" class="result-list"></div>
+                    </div>
+                    <div class="history-section">
+                        <h3>히스토리</h3>
+                        <div id="sum-round-archive" class="result-list"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="carryover-analysis" class="tab-content">
+            <section class="pattern-section">
+                <div class="search-input-container">
+                    <h3>이월 분석 설정</h3>
+                    <div class="pattern-input-grid">
+                        <div class="input-group">
+                            <label for="co-start-round">시작 회차</label>
+                            <input type="number" id="co-start-round" placeholder="1" title="시작 회차">
+                        </div>
+                        <div class="input-group">
+                            <label for="co-end-round">종료 회차</label>
+                            <input type="number" id="co-end-round" placeholder="최신" title="종료 회차">
+                        </div>
+                        <div class="input-group">
+                            <label for="co-count-select">이월 개수</label>
+                            <select id="co-count-select" title="이월 개수">
+                                <option value="1">1개</option>
+                                <option value="2">2개</option>
+                                <option value="3">3개 이상</option>
+                            </select>
+                        </div>
+                        <div class="input-group checkbox-container">
+                            <input type="checkbox" id="co-include-bonus" title="보너스 포함">
+                            <label for="co-include-bonus">보너스 포함</label>
+                        </div>
+                        <button id="btn-run-carryover" class="btn-primary" type="button">분석 실행</button>
+                    </div>
+                </div>
+                <div class="pattern-results">
+                    <h3>결과 <span id="carryover-count-badge">0</span>건</h3>
+                    <div id="carryover-result-list" class="result-list"></div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <script src="js/common.js"></script>
+    <script src="js/tab-main-chart.js"></script>
+    <script src="js/tab-pattern-analysis.js"></script>
+    <script src="js/tab-carryover-sum.js"></script>
+    <script src="js/tab-carryover-product.js"></script>
+    <script src="js/tab-round-sum.js"></script>
+    <script src="js/tab-round-flow.js"></script>
+    <script src="js/tab-number-appearance.js"></script>
+    <script src="js/tab-sum-prediction.js"></script>
+    <script src="js/tab-carryover-analysis.js"></script>
+</body>
+
+</html>

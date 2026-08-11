@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rank Distribution Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>랭크 분포 분석 대시보드</h2>
+
+    <div class="container">
+        <div class="chart-card">
+            <h3>티어별 인원 수 (Bar)</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>분포 비율 (Doughnut)</h3>
+            <canvas id="doughnutChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>종합 능력치 (Radar)</h3>
+            <canvas id="radarChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 공통 데이터 (제공해주신 RankDistribution 구조)
+        const rankData = [
+            { name: 'Diamond', value: 15, color: '#00BFFF' },
+            { name: 'Platinum', value: 25, color: '#E5E4E2' },
+            { name: 'Gold', value: 45, color: '#FFD700' },
+            { name: 'Silver', value: 35, color: '#C0C0C0' },
+            { name: 'Bronze', value: 20, color: '#CD7F32' }
+        ];
+
+        const labels = rankData.map(d => d.name);
+        const values = rankData.map(d => d.value);
+        const colors = rankData.map(d => d.color);
+
+        // 1. Bar Chart
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '인원 수',
+                    data: values,
+                    backgroundColor: colors,
+                    borderRadius: 5
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+
+        // 2. Doughnut Chart
+        new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    hoverOffset: 15
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // 3. Radar Chart
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '티어 영향력',
+                    data: values,
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: colors,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                scales: {
+                    r: { suggestMin: 0 }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

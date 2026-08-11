@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Pattern Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+      body {
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .pt-safe {
+        padding-top: env(safe-area-inset-top);
+      }
+
+      .main-container {
+        height: 100dvh;
+        width: 100%;
+      }
+
+      .tab-active {
+        color: #4f46e5;
+        border-bottom: 2px solid #4f46e5;
+        font-weight: 700;
+      }
+
+      input:not([type="checkbox"]) {
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body class="bg-slate-100 flex items-center justify-center">
+    <div
+      class="main-container bg-white shadow-none flex flex-col overflow-hidden"
+    >
+      <!-- Header -->
+      <div
+        class="bg-indigo-600 p-2 pt-safe text-white shadow-md z-20 flex justify-between items-center px-4 shrink-0"
+      >
+        <div class="w-6"></div>
+        <h1
+          class="text-base font-bold flex items-center justify-center gap-2 mt-1 italic tracking-wider"
+        >
+          <i class="fa-solid fa-chart-line text-sm"></i> Pattern Master
+        </h1>
+        <button
+          onclick="document.getElementById('csvInput').click()"
+          class="w-6 text-white hover:text-indigo-200 transition-colors"
+          title="CSV 파일 열기"
+        >
+          <i class="fa-solid fa-folder-open"></i>
+        </button>
+        <input
+          title="CSV 파일 업로드"
+          type="file"
+          id="csvInput"
+          accept=".csv"
+          class="hidden"
+          onchange="handleFileSelect(this.files)"
+        />
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-200 bg-white shrink-0">
+        <button
+          onclick="switchTab('tab1')"
+          id="btn-tab1"
+          class="flex-1 py-3 text-[12px] text-gray-500 tab-active"
+        >
+          번호 생성
+        </button>
+        <button
+          onclick="switchTab('tab2')"
+          id="btn-tab2"
+          class="flex-1 py-3 text-[12px] text-gray-500"
+        >
+          패턴 분석
+        </button>
+        <button
+          onclick="switchTab('tab3')"
+          id="btn-tab3"
+          class="flex-1 py-3 text-[12px] text-gray-500"
+        >
+          통계 분석
+        </button>
+      </div>
+
+      <!-- Content Area -->
+      <div
+        id="contentArea"
+        class="flex-1 overflow-y-auto bg-slate-50 scrollbar-hide"
+      >
+        <!-- Tab 1: 번호 생성 -->
+        <div id="tab1-section" class="p-4 space-y-4">
+          <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+            <label
+              for="inputCombo"
+              class="text-[10px] font-black text-slate-400 mb-1 block uppercase"
+              >1. 조합 소스 입력 (Main Source)</label
+            >
+            <input
+              type="text"
+              id="inputCombo"
+              title="조합할 소스 숫자 입력"
+              oninput="runCombo()"
+              class="w-full h-[50px] p-2 border border-gray-300 rounded-lg text-base bg-slate-50 text-center font-bold"
+              placeholder="숫자 입력 (예: 131726...)"
+            />
+          </div>
+
+          <div
+            class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+          >
+            <div class="flex flex-col flex-1">
+              <label
+                for="roundPicker"
+                class="text-[10px] font-black text-slate-400 uppercase"
+                >2. 비교 회차 선택</label
+              >
+              <select
+                id="roundPicker"
+                title="비교할 당첨 회차 선택"
+                onchange="runCombo()"
+                class="bg-transparent font-black text-lg text-indigo-700 outline-none appearance-none cursor-pointer"
+              >
+                <option value="">회차 선택</option>
+              </select>
+            </div>
+          </div>
+
+          <div
+            id="roundDetailBox"
+            class="hidden bg-slate-900 text-white p-4 rounded-xl shadow-lg space-y-2 font-mono"
+          >
+            <div
+              class="flex justify-between items-center border-b border-slate-700 pb-2"
+            >
+              <span id="t1DetRound" class="text-indigo-400 font-black text-base"
+                >0회</span
+              >
+              <div id="t1DetNumbers" class="flex gap-1"></div>
+              <span
+                id="t1DetBonus"
+                class="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-[10px] font-bold text-black shadow-sm"
+                >0</span
+              >
+            </div>
+            <div class="flex justify-between text-[10px] pt-1 text-slate-300">
+              <span>합계: <b id="t1DetSum" class="text-white">0</b></span>
+              <span>홀짝: <b id="t1DetOddEven" class="text-white">0:0</b></span>
+              <span>AC: <b id="t1DetAC" class="text-white">0</b></span>
+              <span>SD: <b id="t1DetSD" class="text-white">0</b></span>
+            </div>
+          </div>
+
+          <div id="comboResult" class="hidden space-y-3 pb-10">
+            <div
+              class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm"
+            >
+              <div
+                id="digitPool"
+                class="flex flex-wrap gap-1.5 justify-center"
+              ></div>
+            </div>
+            <div
+              class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm"
+            >
+              <div
+                id="possibleList"
+                class="flex flex-wrap gap-x-1 gap-y-3 justify-center content-start"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: 패턴 분석 -->
+        <div id="tab2-section" class="p-4 space-y-4 hidden">
+          <div
+            class="flex gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-100 items-center"
+          >
+            <input
+              type="text"
+              id="inputAnalysis"
+              title="분석할 숫자 입력"
+              class="w-[75%] h-[50px] p-2 border border-gray-300 rounded-lg text-base bg-slate-50 text-center font-bold"
+              placeholder="숫자 입력 (. 또는 공백)"
+              inputmode="decimal"
+            />
+            <button
+              onclick="runAnalysis()"
+              class="w-[25%] h-[50px] bg-indigo-600 text-white rounded-lg font-black text-base active:scale-95 shadow-md"
+            >
+              실행
+            </button>
+          </div>
+
+          <div id="analysisResult" class="hidden pb-10">
+            <div
+              class="bg-white p-6 rounded-xl border-2 border-indigo-50 shadow-sm flex flex-col items-center mb-4"
+            >
+              <span class="text-[10px] text-slate-400 font-black uppercase mb-1"
+                >Arithmetic Complexity (AC)</span
+              >
+              <div
+                id="acValue"
+                class="text-6xl font-mono font-black text-indigo-600 my-1"
+              >
+                0
+              </div>
+              <div
+                id="acInterp"
+                class="px-6 py-1.5 rounded-full text-sm font-black text-white mt-2"
+              >
+                Wait...
+              </div>
+              <p
+                id="acDesc"
+                class="text-xs text-slate-500 mt-3 text-center break-keep leading-tight px-4"
+              >
+                계산 중...
+              </p>
+            </div>
+
+            <div
+              class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm"
+            >
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="flex flex-col items-center p-3 bg-slate-50 rounded-lg"
+                >
+                  <span class="text-[10px] text-slate-400 font-bold uppercase"
+                    >합계 (Sum)</span
+                  >
+                  <span
+                    id="anSum"
+                    class="text-xl font-black text-slate-700 mt-1"
+                    >0</span
+                  >
+                  <p
+                    id="descSum"
+                    class="text-[10px] text-slate-500 mt-1 text-center leading-3"
+                  >
+                    분석 대기
+                  </p>
+                </div>
+                <div
+                  class="flex flex-col items-center p-3 bg-slate-50 rounded-lg"
+                >
+                  <span class="text-[10px] text-slate-400 font-bold uppercase"
+                    >홀짝 (Odd:Even)</span
+                  >
+                  <span
+                    id="anOddEven"
+                    class="text-xl font-black text-slate-700 mt-1"
+                    >0:0</span
+                  >
+                  <p
+                    id="descOddEven"
+                    class="text-[10px] text-slate-500 mt-1 text-center leading-3"
+                  >
+                    분석 대기
+                  </p>
+                </div>
+                <div
+                  class="flex flex-col items-center p-3 bg-slate-50 rounded-lg"
+                >
+                  <span class="text-[10px] text-slate-400 font-bold uppercase"
+                    >편차 (SD)</span
+                  >
+                  <span id="anSD" class="text-xl font-black text-slate-700 mt-1"
+                    >0.0</span
+                  >
+                  <p
+                    id="descSD"
+                    class="text-[10px] text-slate-500 mt-1 text-center leading-3"
+                  >
+                    분석 대기
+                  </p>
+                </div>
+                <div
+                  class="flex flex-col items-center p-3 bg-slate-50 rounded-lg"
+                >
+                  <span class="text-[10px] text-slate-400 font-bold uppercase"
+                    >구간 패턴</span
+                  >
+                  <span
+                    id="anPattern"
+                    class="text-lg font-black text-slate-700 mt-1 tracking-widest"
+                    >0:0:0:0:0</span
+                  >
+                  <p
+                    id="descPattern"
+                    class="text-[10px] text-slate-500 mt-1 text-center leading-3"
+                  >
+                    분포 확인
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <h3
+                  class="text-[11px] font-black text-indigo-500 uppercase mb-3 flex items-center gap-1"
+                >
+                  <i class="fa-solid fa-microscope"></i> 상세 인사이트
+                </h3>
+                <ul class="text-xs space-y-2.5 text-slate-600 font-semibold">
+                  <li
+                    class="flex justify-between items-center bg-slate-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-400">고저 비율 (Low:High)</span>
+                    <b id="insHighLow" class="text-slate-800">0:0</b>
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-slate-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-400">소수 (Prime) / 합성수</span>
+                    <div class="text-right">
+                      <b id="insPrime" class="text-indigo-600">0</b> /
+                      <b id="insComposite" class="text-slate-600">0</b>
+                    </div>
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-slate-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-400">동끝수 (Same Endings)</span>
+                    <b
+                      id="insEndings"
+                      class="text-slate-800 text-right w-1/2 break-words"
+                      >-</b
+                    >
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-slate-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-400">연번 (Consecutive)</span>
+                    <b id="insConsecutive" class="text-slate-800">-</b>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <h3
+                  class="text-[11px] font-black text-rose-500 uppercase mb-3 flex items-center gap-1"
+                >
+                  <i class="fa-solid fa-history"></i> 다음 회차 참조 분석
+                </h3>
+                <ul class="text-xs space-y-2.5 text-slate-600 font-semibold">
+                  <li
+                    class="flex justify-between items-center bg-rose-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-500">이월수 (Repeated)</span>
+                    <b id="nextRepeated" class="text-rose-700">-</b>
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-rose-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-500">이웃수 (Neighbors)</span>
+                    <b id="nextNeighbors" class="text-rose-700">-</b>
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-rose-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-500">최근 5회 미출현 (Cold 5)</span>
+                    <b id="nextCold" class="text-rose-700">-</b>
+                  </li>
+                  <li
+                    class="flex justify-between items-center bg-rose-50 p-2 rounded-lg"
+                  >
+                    <span class="text-slate-500">과거 1등 당첨 이력</span>
+                    <b id="nextHistory" class="text-rose-700">-</b>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: 통계 분석 -->
+        <div id="tab3-section" class="p-4 space-y-4 hidden">
+          <div
+            class="flex gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-100 items-center"
+          >
+            <input
+              type="text"
+              id="searchRound"
+              title="검색할 회차 또는 패턴 입력"
+              class="w-[55%] h-[50px] p-2 border border-gray-300 rounded-lg text-base bg-slate-50 text-center font-bold"
+              placeholder="회차/패턴 입력"
+            />
+            <div
+              class="w-[20%] flex flex-col items-center justify-center border-l border-gray-100"
+            >
+              <label class="flex flex-col items-center cursor-pointer">
+                <span class="text-[9px] font-black text-indigo-600 mb-1"
+                  >패턴매칭</span
+                >
+                <input
+                  type="checkbox"
+                  id="patternMode"
+                  title="패턴 매칭 모드 활성화"
+                  class="w-5 h-5 accent-indigo-600"
+                />
+              </label>
+            </div>
+            <button
+              onclick="searchByRound()"
+              class="w-[25%] h-[50px] bg-indigo-600 text-white rounded-lg font-black text-base shadow-md active:scale-95"
+            >
+              조회
+            </button>
+          </div>
+
+          <div
+            id="matchListArea"
+            class="hidden bg-white p-3 rounded-xl border border-indigo-100 shadow-sm"
+          >
+            <div
+              id="matchButtons"
+              class="flex flex-row gap-2 overflow-x-auto pb-1 scrollbar-hide"
+            ></div>
+          </div>
+
+          <div
+            id="roundDetail"
+            class="hidden bg-slate-900 text-white p-4 rounded-xl shadow-lg space-y-2 font-mono"
+          >
+            <div
+              class="flex justify-between items-center border-b border-slate-700 pb-2"
+            >
+              <span id="detRound" class="text-indigo-400 font-black text-lg"
+                >0회</span
+              >
+              <div id="detNumbers" class="flex gap-1"></div>
+              <span
+                id="detBonus"
+                class="w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center text-[12px] font-bold text-black"
+                >0</span
+              >
+            </div>
+            <div class="flex justify-between text-[11px] pt-1 text-slate-300">
+              <span>합계: <b id="detSum" class="text-white">0</b></span>
+              <span>홀짝: <b id="detOddEven" class="text-white">0:0</b></span>
+              <span>AC: <b id="detAC" class="text-white">0</b></span>
+              <span>SD: <b id="detSD" class="text-white">0</b></span>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 h-[280px]"
+          >
+            <canvas id="patternChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let trendChart = null;
+      let allData = [];
+      let currentFocusIdx = -1;
+
+      function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      }
+
+      function getBallColor(n) {
+        if (n <= 10) return "bg-yellow-500";
+        if (n <= 20) return "bg-blue-500";
+        if (n <= 30) return "bg-red-500";
+        if (n >= 41) return "bg-green-500";
+        return "bg-slate-500";
+      }
+
+      window.addEventListener("load", () => {
+        loadWinningNumbers();
+      });
+
+      function switchTab(tabId) {
+        ["tab1", "tab2", "tab3"].forEach((id) => {
+          const btn = document.getElementById(`btn-${id}`);
+          const section = document.getElementById(`${id}-section`);
+          if (btn) btn.classList.toggle("tab-active", id === tabId);
+          if (section) section.classList.toggle("hidden", id !== tabId);
+        });
+        if (tabId === "tab3") updateChartView();
+      }
+
+      function handleFileSelect(files) {
+        if (files && files.length > 0) {
+          Papa.parse(files[0], {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+              processData(results);
+              console.log("CSV 데이터 로드 완료");
+            },
+            error: function (err) {
+              showToast("파일 로딩 실패: " + err.message);
+            },
+          });
+        }
+      }
+
+      function processData(results) {
+        if (results && results.data && results.data.length > 0) {
+          allData = results.data.filter((row) => row["회차"]);
+          if (allData.length === 0) return;
+
+          currentFocusIdx = allData.length - 1;
+
+          const picker = document.getElementById("roundPicker");
+          if (picker) {
+            picker.innerHTML = '<option value="">회차 선택</option>';
+            const latestNum = Number(allData[allData.length - 1]["회차"]);
+            picker.add(new Option(`${latestNum + 1}회 (예정)`, latestNum + 1));
+            [...allData].reverse().forEach((row) => {
+              picker.add(new Option(`${row["회차"]}회`, row["회차"]));
+            });
+          }
+          updateChartView();
+        }
+      }
+
+      function loadWinningNumbers() {
+        // 프리뷰(blob:) 환경에서 SyntaxError 방지를 위한 프로토콜 필터링
+        if (!window.location.protocol.startsWith("http")) {
+          console.info(
+            "알림: 로컬/프리뷰 환경에서는 수동으로 CSV 파일을 업로드해야 데이터가 연동됩니다.",
+          );
+          return;
+        }
+
+        const fileName = "ReadWeb-WinningNumbers.csv";
+        try {
+          Papa.parse(fileName, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+              if (results.data && results.data.length > 0) {
+                processData(results);
+              }
+            },
+          });
+        } catch (e) {
+          console.warn("자동 로드 생략됨");
+        }
+      }
+
+      function jumpToRound(idx) {
+        if (idx < 0 || idx >= allData.length) return;
+        currentFocusIdx = idx;
+        updateChartView();
+        showRoundDetail(allData[idx]);
+      }
+
+      function searchByRound() {
+        if (allData.length === 0) {
+          showToast("비교할 데이터가 없습니다. CSV 파일을 먼저 열어주세요.");
+          return;
+        }
+        const inputEl = document.getElementById("searchRound");
+        const inputVal = inputEl ? inputEl.value.trim() : "";
+        if (!inputVal) return;
+
+        const isPatternMode = document.getElementById("patternMode")?.checked;
+        const matchListArea = document.getElementById("matchListArea");
+        const matchButtons = document.getElementById("matchButtons");
+        if (matchListArea) matchListArea.classList.add("hidden");
+        if (matchButtons) matchButtons.innerHTML = "";
+
+        if (isPatternMode) {
+          const pattern = inputVal
+            .split(/[.\s,]+/)
+            .filter((s) => s !== "")
+            .map(Number);
+          if (pattern.length === 0) return;
+
+          let matches = [];
+          for (let i = 0; i <= allData.length - pattern.length; i++) {
+            let isMatch = true;
+            for (let j = 0; j < pattern.length; j++) {
+              if (Number(allData[i + j]["AC"]) !== pattern[j]) {
+                isMatch = false;
+                break;
+              }
+            }
+            if (isMatch) matches.push(i + pattern.length - 1);
+          }
+
+          if (matches.length > 0) {
+            matchListArea.classList.remove("hidden");
+            matches.forEach((idx) => {
+              const btn = document.createElement("button");
+              btn.className =
+                "flex-shrink-0 px-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold text-slate-700 active:bg-indigo-600 active:text-white";
+              btn.textContent = `${allData[idx]["회차"]}회`;
+              btn.onclick = () => jumpToRound(idx);
+              matchButtons.appendChild(btn);
+            });
+            jumpToRound(matches[0]);
+          } else {
+            showToast("일치하는 패턴이 없습니다.");
+          }
+        } else {
+          const targetRound = parseInt(inputVal);
+          const idx = allData.findIndex(
+            (r) => Number(r["회차"]) === targetRound,
+          );
+          if (idx !== -1) jumpToRound(idx);
+          else showToast(`${targetRound}회 정보를 찾을 수 없습니다.`);
+        }
+      }
+
+      function showRoundDetail(row) {
+        const detail = document.getElementById("roundDetail");
+        if (detail) detail.classList.remove("hidden");
+
+        setText("detRound", `${row["회차"]}회`);
+        const nums = [
+          row["1번"],
+          row["2번"],
+          row["3번"],
+          row["4번"],
+          row["5번"],
+          row["6번"],
+        ].map(Number);
+        const numArea = document.getElementById("detNumbers");
+        if (numArea) {
+          numArea.innerHTML = "";
+          nums.forEach((n) => {
+            const s = document.createElement("span");
+            s.className = `w-7 h-7 ${getBallColor(n)} rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-sm`;
+            s.textContent = n;
+            numArea.appendChild(s);
+          });
+        }
+        setText("detBonus", row["보너스"]);
+        setText("detSum", row["합계"] || nums.reduce((a, b) => a + b, 0));
+        const odd = nums.filter((n) => n % 2 !== 0).length;
+        setText("detOddEven", `${odd}:${6 - odd}`);
+        setText("detAC", row["AC"]);
+        setText(
+          "detSD",
+          typeof row["편차"] === "number"
+            ? row["편차"].toFixed(1)
+            : row["편차"],
+        );
+        detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function updateChartView() {
+        if (!allData || allData.length === 0) return;
+        const count = 15;
+        const start = Math.max(0, currentFocusIdx - Math.floor(count / 2));
+        const end = Math.min(allData.length, start + count);
+        initChart(
+          allData.slice(start, end),
+          Number(allData[currentFocusIdx]["회차"]),
+        );
+      }
+
+      function initChart(data, targetRound = null) {
+        const canvas = document.getElementById("patternChart");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(ctx, {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "AC",
+                data: data.map((r) => ({
+                  x: Number(r["회차"]),
+                  y: Number(r["AC"]),
+                })),
+                showLine: true,
+                borderColor: "#4f46e5",
+                backgroundColor: "#4f46e5",
+                pointRadius: (c) => (c.raw?.x === targetRound ? 8 : 4),
+                pointBackgroundColor: (c) =>
+                  c.raw?.x === targetRound ? "#ef4444" : "#4f46e5",
+              },
+              {
+                label: "SD",
+                data: data.map((r) => ({
+                  x: Number(r["회차"]),
+                  y: Number(r["편차"]),
+                })),
+                showLine: true,
+                borderColor: "#8b5cf6",
+                backgroundColor: "#8b5cf6",
+                pointRadius: (c) => (c.raw?.x === targetRound ? 8 : 4),
+                pointBackgroundColor: (c) =>
+                  c.raw?.x === targetRound ? "#ef4444" : "#8b5cf6",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onClick: (e, el) => {
+              if (el.length > 0) {
+                const rVal =
+                  trendChart.data.datasets[el[0].datasetIndex].data[el[0].index]
+                    .x;
+                const idx = allData.findIndex(
+                  (r) => Number(r["회차"]) === rVal,
+                );
+                if (idx !== -1) jumpToRound(idx);
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: (items) => items[0].raw.x + "회",
+                  label: (item) =>
+                    `${item.dataset.label}: ${item.raw.y.toFixed(1)}`,
+                },
+              },
+              datalabels: {
+                display: true,
+                formatter: (v) => v.y.toFixed(0),
+                font: { size: 8, weight: "bold" },
+                align: "top",
+              },
+            },
+            scales: {
+              x: {
+                type: "linear",
+                ticks: {
+                  stepSize: 1,
+                  font: { size: 9 },
+                  callback: (v) => String(v).replace(/,/g, "") + "회",
+                },
+              },
+              y: { ticks: { font: { size: 9 } } },
+            },
+          },
+          plugins: [ChartDataLabels],
+        });
+      }
+
+      function runCombo() {
+        const sourceVal = document.getElementById("inputCombo").value;
+        const comboResult = document.getElementById("comboResult");
+        const poolArea = document.getElementById("digitPool");
+        const listArea = document.getElementById("possibleList");
+        const detailBox = document.getElementById("roundDetailBox");
+
+        if (!sourceVal) {
+          comboResult.classList.add("hidden");
+          detailBox.classList.add("hidden");
+          return;
+        }
+        comboResult.classList.remove("hidden");
+
+        const digits = sourceVal.replace(/\D/g, "").split("").map(Number);
+        poolArea.innerHTML = "";
+        [...digits]
+          .sort((a, b) => a - b)
+          .forEach((d) => {
+            const s = document.createElement("span");
+            s.className =
+              "w-7 h-7 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-full font-bold text-slate-700 text-xs shadow-sm";
+            s.textContent = d;
+            poolArea.appendChild(s);
+          });
+
+        let targetSet = new Set();
+        const selectedRound = document.getElementById("roundPicker").value;
+        if (selectedRound && allData.length > 0) {
+          const row = allData.find(
+            (r) => Number(r["회차"]) === Number(selectedRound),
+          );
+          if (row) {
+            detailBox.classList.remove("hidden");
+            setText("t1DetRound", `${row["회차"]}회`);
+            const nums = [
+              row["1번"],
+              row["2번"],
+              row["3번"],
+              row["4번"],
+              row["5번"],
+              row["6번"],
+            ].map(Number);
+            const numArea = document.getElementById("t1DetNumbers");
+            if (numArea) {
+              numArea.innerHTML = "";
+              nums.forEach((n) => {
+                targetSet.add(n);
+                const s = document.createElement("span");
+                s.className = `w-6 h-6 ${getBallColor(n)} rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm`;
+                s.textContent = n;
+                numArea.appendChild(s);
+              });
+            }
+            setText("t1DetBonus", row["보너스"]);
+            setText("t1DetSum", row["합계"] || nums.reduce((a, b) => a + b, 0));
+            const odd = nums.filter((n) => n % 2 !== 0).length;
+            setText("t1DetOddEven", `${odd}:${6 - odd}`);
+            setText("t1DetAC", row["AC"]);
+            setText(
+              "t1DetSD",
+              typeof row["편차"] === "number"
+                ? row["편차"].toFixed(1)
+                : row["편차"],
+            );
+          } else detailBox.classList.add("hidden");
+        }
+
+        const validSet = new Set();
+        digits.forEach((d, i) => {
+          if (d >= 1 && d <= 9) validSet.add(d);
+          digits.forEach((next, j) => {
+            if (i === j) return;
+            const combined = parseInt(`${d}${next}`);
+            if (combined >= 1 && combined <= 45) validSet.add(combined);
+          });
+        });
+
+        listArea.innerHTML = "";
+        Array.from(validSet)
+          .sort((a, b) => a - b)
+          .forEach((num) => {
+            const isMatch = targetSet.has(num);
+            const s = document.createElement("span");
+            s.className = `w-9 h-9 flex items-center justify-center rounded-full font-black text-[12px] text-white shadow-md transition-all m-1 ${getBallColor(num)} ${isMatch ? "ring-4 ring-indigo-400 ring-offset-2 scale-110 z-10" : "opacity-90"}`;
+            s.textContent = num;
+            listArea.appendChild(s);
+          });
+      }
+
+      function runAnalysis() {
+        const inputEl = document.getElementById("inputAnalysis");
+        const val = inputEl ? inputEl.value : "";
+        const nums = val
+          .split(/[.\s,]+/)
+          .filter((s) => s)
+          .map(Number)
+          .filter((n) => !isNaN(n) && n >= 1 && n <= 45);
+
+        if (nums.length < 6) {
+          showToast("6개 이상의 유효한 숫자를 입력해주세요 (1~45).");
+          return;
+        }
+        document.getElementById("analysisResult")?.classList.remove("hidden");
+
+        const sNums = [...nums].sort((a, b) => a - b).slice(0, 6);
+        const diffs = new Set();
+        for (let i = 0; i < sNums.length; i++) {
+          for (let j = i + 1; j < sNums.length; j++)
+            diffs.add(sNums[j] - sNums[i]);
+        }
+        const ac = diffs.size - (sNums.length - 1);
+        setText("acValue", ac);
+        const acInterp = document.getElementById("acInterp");
+        if (acInterp) {
+          acInterp.textContent = ac >= 7 ? "복잡도 높음" : "복잡도 낮음";
+          acInterp.className = `px-6 py-1.5 rounded-full text-sm font-black mt-2 ${ac >= 7 ? "bg-green-600" : "bg-amber-500"} text-white text-center`;
+        }
+        setText(
+          "acDesc",
+          ac >= 7 ? "무작위성이 높습니다." : "패턴이 단조롭습니다.",
+        );
+
+        const sum = sNums.reduce((a, b) => a + b, 0);
+        setText("anSum", sum);
+        setText(
+          "descSum",
+          sum >= 120 && sum <= 180 ? "골든존 범위" : "평균 범위를 벗어남",
+        );
+
+        const oddCount = sNums.filter((n) => n % 2 !== 0).length;
+        setText("anOddEven", `${oddCount}:${6 - oddCount}`);
+        setText(
+          "descOddEven",
+          Math.abs(oddCount - 3) <= 1 ? "안정적 비율" : "편중된 비율",
+        );
+
+        const mean = sum / 6;
+        const variance =
+          sNums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / 6;
+        setText("anSD", Math.sqrt(variance).toFixed(1));
+
+        const sections = [0, 0, 0, 0, 0];
+        sNums.forEach((n) => {
+          if (n <= 10) sections[0]++;
+          else if (n <= 20) sections[1]++;
+          else if (n <= 30) sections[2]++;
+          else if (n <= 40) sections[3]++;
+          else sections[4]++;
+        });
+        setText("anPattern", sections.join(":"));
+        setText(
+          "insHighLow",
+          `${sNums.filter((n) => n <= 22).length}:${sNums.filter((n) => n > 22).length}`,
+        );
+
+        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
+        setText(
+          "insPrime",
+          sNums.filter((n) => primes.includes(n)).length + "개",
+        );
+        setText(
+          "insComposite",
+          sNums.filter((n) => !primes.includes(n) && n !== 1).length + "개",
+        );
+
+        const ends = sNums.map((n) => n % 10);
+        const counts = ends.reduce((a, b) => {
+          a[b] = (a[b] || 0) + 1;
+          return a;
+        }, {});
+        const sameEnds = Object.entries(counts)
+          .filter((e) => e[1] > 1)
+          .map((e) => `${e[0]}끝(${e[1]})`)
+          .join(", ");
+        setText("insEndings", sameEnds || "없음");
+
+        let cons = 0;
+        for (let i = 0; i < 5; i++) if (sNums[i] + 1 === sNums[i + 1]) cons++;
+        setText("insConsecutive", cons > 0 ? cons + "쌍" : "없음");
+
+        if (allData.length > 0) {
+          const lastRow = allData[allData.length - 1];
+          const lastNums = [
+            lastRow["1번"],
+            lastRow["2번"],
+            lastRow["3번"],
+            lastRow["4번"],
+            lastRow["5번"],
+            lastRow["6번"],
+          ].map(Number);
+          setText(
+            "nextRepeated",
+            sNums.filter((n) => lastNums.includes(n)).length + "개",
+          );
+          const neighbors = new Set();
+          lastNums.forEach((n) => {
+            if (n > 1) neighbors.add(n - 1);
+            if (n < 45) neighbors.add(n + 1);
+          });
+          setText(
+            "nextNeighbors",
+            sNums.filter((n) => neighbors.has(n) && !lastNums.includes(n))
+              .length + "개",
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>끝수 분석 랩 - 최근 20회 기준</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner">
+            <h1 class="title">
+                <span class="dot"></span>
+                끝수 분석 랩
+            </h1>
+            <p class="subtitle">최근 20회 기준 끝수(1의 자리) 빈도 예측</p>
+            <div class="meta-row">
+                <span id="dataRange" class="badge">데이터 로딩 중...</span>
+                <button id="btnReload" class="reload-btn" type="button">새로고침</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- 끝수 빈도 차트 -->
+        <section class="card">
+            <div class="card-head">
+                <h2>끝수 빈도 (최근 20회)</h2>
+                <span id="totalCount" class="badge badge-blue">0회</span>
+            </div>
+            <div id="digitChart" class="digit-chart"></div>
+        </section>
+
+        <!-- 핫 / 콜드 끝수 -->
+        <section class="grid-2">
+            <div class="card">
+                <h2 class="card-head-only">🔥 핫 끝수 TOP 3</h2>
+                <div id="hotList" class="digit-list"></div>
+            </div>
+            <div class="card">
+                <h2 class="card-head-only">❄️ 콜드 끝수 TOP 3</h2>
+                <div id="coldList" class="digit-list"></div>
+            </div>
+        </section>
+
+        <!-- 예측 조합 -->
+        <section class="card card-predict">
+            <div class="card-head">
+                <h2>🎯 예측 조합 (끝수 기반)</h2>
+                <button id="btnGenerate" class="gen-btn" type="button">다시 생성</button>
+            </div>
+            <div id="predictArea" class="predict-area">
+                <p class="hint">데이터 로딩 후 예측 조합이 표시됩니다.</p>
+            </div>
+            <div id="predictDigits" class="predict-digits"></div>
+        </section>
+
+        <footer class="footer">
+            <p>로또는 독립 추첨이므로 본 예측은 통계적 참고용입니다.</p>
+        </footer>
+    </main>
+
+    <div id="loader" class="loader hidden">
+        <div class="spinner"></div>
+        <p>데이터 분석 중...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

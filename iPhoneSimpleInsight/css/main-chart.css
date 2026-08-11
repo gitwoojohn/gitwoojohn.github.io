@@ -1,0 +1,267 @@
+/* ============================================================================
+   MAIN CHART TAB STYLING (Clean Code, No !important)
+   ========================================================================= */
+
+/* 1. 메인 탭 레이아웃 */
+#main-chart {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    padding-bottom: 60px;
+    color: var(--text);
+}
+
+/* ============================================================================
+   SEARCH SECTION (구간 패턴 검색창)
+   #main-chart ID를 앞에 붙여 우선순위를 높임 -> !important 불필요
+   ========================================================================= */
+#main-chart .search-input-container {
+    background-color: var(--card);
+    /* 카드 배경색 */
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#main-chart .search-input-container h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: var(--text);
+    /* 흰색 글자 */
+    font-weight: 700;
+}
+
+/* 그리드 레이아웃 */
+#main-chart .pattern-input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 10px;
+    align-items: end;
+}
+
+#main-chart .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#main-chart .input-group label {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    /* 연한 회색 */
+    margin-left: 2px;
+    font-weight: 600;
+}
+
+/* 입력 필드 디자인 (명확한 색상 지정) */
+#main-chart .input-group input {
+    width: 100%;
+    height: 45px;
+    background-color: #0d1117;
+    /* 배경: 더 어두운 색 */
+    color: #ffffff;
+    /* 글자: 흰색 */
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+#main-chart .input-group input:focus {
+    border-color: var(--accent);
+    /* 포커스시 파란색 */
+}
+
+/* 검색 버튼 */
+#main-chart #searchPattern {
+    height: 45px;
+    background-color: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s;
+}
+
+#main-chart #searchPattern:active {
+    opacity: 0.8;
+}
+
+/* ============================================================================
+   TOP INFO SECTION (KPI & Recommend)
+   ========================================================================= */
+#main-chart .top-row {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+/* 결과 카드 */
+/* #main-chart .result-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px 10px 10px;
+    position: relative;
+} */
+
+#main-chart .result-card {
+    /* 너비를 기기 폭에 맞게 고정 (좌우 여백 고려) */
+    flex: 0 0 calc(100% - 10px);
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: row;
+    /* 가로 한 줄 배치 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
+    justify-content: space-evenly;
+    /* 양 끝 정렬 */
+    padding: 12px 15px;
+    box-sizing: border-box;
+}
+
+#main-chart .card-label {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background-color: var(--accent);
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+/* 숫자공 컨테이너 (왼쪽) */
+#main-chart .balls-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.result-layout {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-evenly; */
+    justify-content: space-between;
+    /* 왼쪽 정렬 */
+    gap: 10px;
+}
+
+.sum-display {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* padding-left: 5px; */
+    /* border-left: 1px solid var(--border); */
+    min-width: 65px;
+    text-align: center;
+}
+
+#total-sum {
+    font-size: 1.2rem;
+    /* 한 줄 표시를 위해 크기 살짝 조절 */
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+}
+
+.sum-label {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    margin-bottom: 2px;
+}
+
+#sum-badge {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    white-space: nowrap;
+    /* 줄바꿈 방지 */
+}
+
+/* KPI Grid */
+#main-chart .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+#main-chart .kpi-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 60px;
+}
+
+#main-chart .badge-good {
+    font-size: 0.8em;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    display: block;
+}
+
+#main-chart #kpi-skip-count {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--highlight);
+}
+
+/* ============================================================================
+   CHART SECTION
+   ========================================================================= */
+#main-chart .chart-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+#main-chart .chart-container {
+    position: relative;
+    width: 100%;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 15px;
+
+    /* 차트 높이 지정 */
+    height: 350px;
+    min-height: 300px;
+
+    box-sizing: border-box;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#main-chart .chart-container h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.05rem;
+    color: var(--text);
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+}
+
+#main-chart .chart-container canvas {
+    width: 100%;
+    height: calc(100% - 40px);
+    display: block;
+}

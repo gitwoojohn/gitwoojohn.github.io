@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lotto Vertical Lab - Trend Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
+
+        body {
+            -webkit-text-size-adjust: 100%;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0.75rem;
+            min-height: 100vh;
+        }
+
+        .safe-pt {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .safe-pb {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* TrendTab 헤더 스타일 */
+        .premium-header {
+            background: linear-gradient(to bottom right, #ffffff, #f8fafc, #eff6ff);
+            border: 1px solid #e5e7eb;
+            border-radius: 1.5rem;
+        }
+
+        /* 공 표시 카드 (마스터 요청 사양) */
+        .result-card {
+            background-color: rgb(15 23 42);
+            /* slate-900 */
+            color: #ffffff;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgb(30 41 59);
+            /* slate-800 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            text-align: left;
+            overflow: visible;
+        }
+
+        /* 럭셔리 로또 볼 */
+        .lotto-ball {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .ball-y {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .ball-b {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .ball-r {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .ball-g {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .ball-v {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .hit-bar {
+            width: 100%;
+            border-radius: 0.5rem 0.5rem 0 0;
+            transition: height 1s ease;
+        }
+
+        /* 토스트 알림 애니메이션 */
+        #toast-container {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .toast.hiding {
+            animation: toast-out 0.3s ease forwards;
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        /* 내비게이션 플로팅 버튼 */
+        .nav-fab {
+            position: fixed;
+            right: 1.25rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: rgba(15, 23, 42, 0.9);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-fab:active {
+            transform: scale(0.9);
+            background: #2563eb;
+        }
+
+        #goTop {
+            bottom: 6.5rem;
+        }
+
+        #goBottom {
+            bottom: 2.5rem;
+        }
+    </style>
+</head>
+
+<body class="safe-pt">
+    <!-- 토스트 컨테이너 -->
+    <div id="toast-container"></div>
+
+    <!-- 플로팅 내비게이션 -->
+    <button id="goTop" type="button" title="위로 이동" class="nav-fab"
+        onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+    </button>
+    <button id="goBottom" type="button" title="아래로 이동" class="nav-fab"
+        onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <div class="max-w-md mx-auto space-y-4">
+
+        <!-- 헤더 -->
+        <header class="mb-6">
+            <div class="premium-header relative overflow-hidden p-6 shadow-sm border-slate-200">
+                <div class="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/5 blur-2xl"></div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span
+                        class="inline-flex items-center gap-1.5 rounded-full bg-blue-600/10 px-3 py-1 text-[10px] font-bold text-blue-700">
+                        <span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span>
+                        바이너리 패턴 분석
+                    </span>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3v18h18M7 14l4-4 3 3 5-6" />
+                    </svg>
+                    컬럼 패턴 분석기
+                </h1>
+                <p class="mt-3 text-xs text-slate-500 font-medium">열(Column) 간격 시퀀스 기반 예측</p>
+
+                <div class="mt-6 flex gap-2">
+                    <button type="button" title="CSV 파일 불러오기" onclick="document.getElementById('csvFileInput').click()"
+                        class="flex-1 h-12 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 active:bg-slate-50">CSV
+                        로드</button>
+                    <button type="button" title="패턴 분석 실행" onclick="runVerticalAnalysis()"
+                        class="flex-[1.5] h-12 rounded-xl bg-blue-600 text-xs font-black text-white shadow-lg shadow-blue-200 active:bg-blue-700">분석
+                        실행</button>
+                </div>
+                <input type="file" id="csvFileInput" title="로또 데이터 CSV 파일 선택" class="hidden" accept=".csv">
+            </div>
+            <!-- 탭 내비게이션 -->
+            <nav class="flex gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/60 mx-1 mb-2">
+                <button onclick="switchTab('main')" id="tabMainBtn" type="button" title="종합 분석 대시보드"
+                    class="tab-btn flex-1 py-3 text-[11px] font-black rounded-xl bg-white shadow-sm text-blue-600 transition-all">실시간
+                    분석</button>
+                <button onclick="switchTab('scanner')" id="tabScannerBtn" type="button" title="패턴 스캐너 전용"
+                    class="tab-btn flex-1 py-3 text-[11px] font-black rounded-xl text-slate-500 hover:bg-white/50 transition-all">비트
+                    스캐너</button>
+            </nav>
+
+            <!-- [TAB 1] 실시간 분석 화면 -->
+            <div id="tabMain" class="tab-content space-y-4">
+
+                <!-- 🧪 9비트 패턴 매칭 스캐너 (사용자 요청 추가) -->
+                <section id="patternScannerArea" class="px-1 space-y-3">
+                    <div class="bg-slate-900 rounded-2xl p-5 shadow-xl border border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-[11px] font-black text-blue-400 uppercase tracking-widest">9-Bit 패턴 스캐너</h2>
+                            <select id="moduleSelect" title="분석할 모듈 선택" onchange="resetScanUI()"
+                                class="bg-slate-800 text-[10px] text-white border-none rounded-lg px-2 py-1 focus:ring-1 focus:ring-blue-500">
+                                <option value="0">Module 1 (1-9번)</option>
+                                <option value="1">Module 2 (10-18번)</option>
+                                <option value="2">Module 3 (19-27번)</option>
+                                <option value="3">Module 4 (28-36번)</option>
+                                <option value="4">Module 5 (37-45번)</option>
+                            </select>
+                        </div>
+
+                        <!-- 비트 토글 버튼 영역 -->
+                        <div class="flex justify-between gap-1 mb-5">
+                            <button type="button" title="비트 1 토글" onclick="toggleBit(this, 0)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 2 토글" onclick="toggleBit(this, 1)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 3 토글" onclick="toggleBit(this, 2)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 4 토글" onclick="toggleBit(this, 3)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 5 토글" onclick="toggleBit(this, 4)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 6 토글" onclick="toggleBit(this, 5)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 7 토글" onclick="toggleBit(this, 6)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 8 토글" onclick="toggleBit(this, 7)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                            <button type="button" title="비트 9 토글" onclick="toggleBit(this, 8)"
+                                class="bit-btn w-9 h-11 bg-slate-800 rounded-lg text-[13px] font-black text-slate-500 border border-slate-700 transition-all">0</button>
+                        </div>
+
+                        <div class="flex gap-2 mb-4">
+                            <button type="button" title="최신 회차 패턴 가져오기" onclick="fetchCurrentBitPattern()"
+                                class="flex-1 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl text-[10px] font-bold text-blue-300 border border-blue-500/20">현재
+                                패턴 불러오기</button>
+                            <button type="button" title="과거 패턴 추적 실행" onclick="executeScan()"
+                                class="flex-[1.5] h-10 bg-blue-600 hover:bg-blue-700 rounded-xl text-[11px] font-black text-white shadow-lg shadow-blue-900/40">과거
+                                추적 실행</button>
+                        </div>
+
+                        <!-- 검색 결과창 -->
+                        <div id="scanResultArea" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-4">
+                            <!-- 요약 정보 요약 -->
+                            <div
+                                class="flex justify-between items-center bg-slate-800/30 p-3 rounded-xl border border-slate-700/30">
+                                <span class="text-[11px] text-slate-400 font-bold">동일 패턴 발견 통계</span>
+                                <span id="matchCount" class="text-sm font-black text-yellow-500">0회 발견</span>
+                            </div>
+
+                            <!-- 발견된 회차 리스트 (별도 공간) -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center px-1">
+                                    <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">탐색된 과거
+                                        회차
+                                        히스토리</span>
+                                    <span class="text-[8px] text-slate-600 italic">최신순 정렬</span>
+                                </div>
+                                <div id="matchRounds"
+                                    class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto no-scrollbar">
+                                    <!-- JS에서 뱃지 형태로 렌더링 -->
+                                </div>
+                            </div>
+
+                            <!-- 확률 지도 -->
+                            <div>
+                                <span
+                                    class="text-[9px] text-slate-500 font-black uppercase mb-3 block tracking-widest">다음
+                                    회차 출현
+                                    확률 (Heatmap)</span>
+                                <div id="probHeatmap" class="flex justify-between gap-1">
+                                    <!-- JS에서 렌더링 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <main class="space-y-4 pb-24">
+                    <!-- AI PREDICTIONS -->
+                    <section id="predictionArea">
+                        <div class="border border-slate-200/50 rounded-[2rem] p-5 bg-white/30 mx-1 shadow-sm">
+                            <div class="flex items-center gap-2 px-1 mb-4">
+                                <div class="h-5 w-1 bg-blue-600 rounded-full"></div>
+                                <h2
+                                    class="text-[13px] font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    AI 상위 5개 예측 조합
+                                </h2>
+                            </div>
+                            <div id="predictionContainer" class="space-y-3">
+                                <div
+                                    class="bg-white/50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+                                    <p class="text-slate-400 text-xs italic font-medium">데이터 로드 후 분석을 시작하십시오.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 통합 분석 리포트 영역 (적중수 분포 및 핵심 통계 통합) -->
+                    <div id="analysisReportWrapper"
+                        class="hidden border border-slate-200/50 rounded-[2rem] p-5 space-y-7 bg-white/30 mx-1">
+                        <section id="distributionArea" class="space-y-4">
+                            <div class="flex items-center gap-2 px-1">
+                                <div class="h-4 w-0.5 bg-slate-400 rounded-full"></div>
+                                <h2
+                                    class="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
+                                    </svg>
+                                    적중수 및 분포 분석
+                                </h2>
+                            </div>
+
+                            <div class="flex items-end gap-3 px-1">
+                                <!-- 분포 차트 (좌측) -->
+                                <div id="hitsDistribution" class="grid grid-cols-4 gap-1.5 flex-1 min-w-0"></div>
+
+                                <!-- 핵심 통계 지표 (우측 2단 적층) -->
+                                <div id="statsArea" class="flex flex-col gap-2 w-[100px] shrink-0 mb-4">
+                                    <div
+                                        class="bg-white/70 backdrop-blur-sm border border-slate-100 rounded-xl py-2 px-3 shadow-sm">
+                                        <span
+                                            class="text-[7px] font-black text-slate-400 uppercase tracking-tighter block mb-0.5">평균
+                                            적중수</span>
+                                        <div id="avgHitsVal" class="text-sm font-black text-blue-600 leading-none">0.00
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="bg-white/70 backdrop-blur-sm border border-slate-100 rounded-xl py-2 px-3 shadow-sm">
+                                        <span
+                                            class="text-[7px] font-black text-slate-400 uppercase tracking-tighter block mb-0.5">예측
+                                            신뢰도</span>
+                                        <div class="text-sm font-black text-slate-900 leading-none">82.2%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- HISTORY -->
+                    <section id="historyArea" class="hidden space-y-3 px-1">
+                        <div class="pt-6 border-t border-slate-200 mt-2 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-200">
+                                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-tight">과거 회차 검증</h2>
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Backtest
+                                        Performance Logs</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="backtestList" class="space-y-3"></div>
+
+                        <!-- 더보기 버튼 -->
+                        <div id="moreHistoryArea" class="hidden pt-4 pb-8">
+                            <button type="button" title="검증 이력 더보기" onclick="loadMoreHistory()"
+                                class="w-full h-14 bg-blue-600 rounded-2xl text-sm font-black text-white shadow-lg shadow-blue-200 active:bg-blue-700 flex items-center justify-center gap-2">
+                                <span>검증 이력 더보기</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </section>
+                </main>
+            </div>
+
+            <!-- [TAB 2] 비트 스캐너 전용 화면 -->
+            <div id="tabScanner" class="tab-content hidden space-y-4">
+                <section id="patternScannerArea2" class="px-1 space-y-3">
+                    <div class="bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-800">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex flex-col gap-1">
+                                <h2
+                                    class="text-[12px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Expert 비트 스캐너
+                                </h2>
+                                <p class="text-[9px] text-slate-500 font-medium">9-Bit Sequence Pattern Discovery</p>
+                            </div>
+                            <select id="moduleSelect2" title="분석할 모듈 선택" onchange="resetScanUI(2)"
+                                class="bg-slate-800 text-[10px] text-white border-slate-700/50 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
+                                <option value="0">Module 1 (1-9번)</option>
+                                <option value="1">Module 2 (10-18번)</option>
+                                <option value="2">Module 3 (19-27번)</option>
+                                <option value="3">Module 4 (28-36번)</option>
+                                <option value="4">Module 5 (37-45번)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-between gap-1 mb-6">
+                            <button type="button" title="비트 1 토글" onclick="toggleBit(this, 0, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 2 토글" onclick="toggleBit(this, 1, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 3 토글" onclick="toggleBit(this, 2, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 4 토글" onclick="toggleBit(this, 3, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 5 토글" onclick="toggleBit(this, 4, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 6 토글" onclick="toggleBit(this, 5, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 7 토글" onclick="toggleBit(this, 6, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 8 토글" onclick="toggleBit(this, 7, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                            <button type="button" title="비트 9 토글" onclick="toggleBit(this, 8, 2)"
+                                class="bit-btn-2 w-9 h-12 bg-slate-800 rounded-xl text-[14px] font-black text-slate-500 border border-slate-700 transition-all shadow-sm">0</button>
+                        </div>
+
+                        <div class="flex gap-2.5 mb-5">
+                            <button type="button" title="최신 회차 패턴 가져오기" onclick="fetchCurrentBitPattern(2)"
+                                class="flex-1 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl text-[11px] font-bold text-blue-300 border border-blue-500/20 shadow-inner">현재
+                                패턴 불러오기</button>
+                            <button type="button" title="과거 패턴 추적 실행" onclick="executeScan(2)"
+                                class="flex-[1.5] h-12 bg-blue-600 hover:bg-blue-700 rounded-2xl text-[12px] font-black text-white shadow-lg shadow-blue-900/40">과거
+                                추적 실행</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- [OUTPUT SECTION] 신규 데이터 및 분석 결과 출력 전용 영역 -->
+                <section id="scanOutputArea2" class="px-1 space-y-3">
+                    <div id="scanResultArea2"
+                        class="hidden bg-slate-900 rounded-[2rem] p-6 shadow-2xl border border-slate-800 space-y-7">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
+                                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="text-[13px] font-black text-white uppercase tracking-tight">Sequence
+                                        Deep-Dive Report</h2>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Advanced
+                                        Analysis Results</p>
+                                </div>
+                            </div>
+                            <div class="bg-indigo-600/10 px-3 py-1.5 rounded-lg border border-indigo-500/20">
+                                <span id="matchCount2" class="text-sm font-black text-indigo-400">0회 발견</span>
+                            </div>
+                        </div>
+
+                        <!-- [NEW] 발견 회차 전용 유동적 섹션 (스크롤 제거, 유동적 확장) -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2 px-1">
+                                <div
+                                    class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]">
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">탐색된 패턴
+                                    히스토리 (과거 사례)</span>
+                            </div>
+                            <div id="matchRounds2"
+                                class="bg-slate-950/80 p-5 rounded-[1.5rem] border border-slate-800/50 flex flex-wrap gap-2.5 min-h-[60px] shadow-inner transition-all duration-500">
+                                <!-- JS RENDERING: 발견 회차 버튼 클러스터 -->
+                            </div>
+                        </div>
+
+                        <!-- [STATS] 확률 분포 섹션 -->
+                        <div class="space-y-4 pt-4 border-t border-slate-800/50">
+                            <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest px-1">차기 회차 출현
+                                확률 분포 (Heatmap)</span>
+                            <div id="probHeatmap2"
+                                class="flex justify-between gap-1.5 h-24 bg-slate-950/50 p-4 rounded-[1.5rem] border border-slate-800/40">
+                                <!-- JS RENDERING: 히트맵 데이터 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- [NEW] 시퀀스 정밀 분석 전용 섹션 -->
+                <section id="scanDetailSection2" class="px-1 space-y-3 pb-8">
+                    <div id="matchDetailArea2"
+                        class="hidden border border-slate-200/50 rounded-[1.25rem] p-1.5 space-y-3 bg-white/30 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div class="flex items-center justify-between px-1">
+                            <div class="flex items-center gap-2">
+                                <div class="h-5 w-1 bg-blue-600 rounded-full"></div>
+                                <h2
+                                    class="text-[13px] font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    시퀀스 정밀 분석 Report
+                                </h2>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button"
+                                    onclick="document.getElementById('matchDetailContent2').innerHTML = ''; document.getElementById('matchDetailArea2').classList.add('hidden');"
+                                    class="h-8 px-3 rounded-xl bg-slate-100/80 text-[10px] font-black text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all uppercase flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                                    </svg>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="matchDetailContent2" class="px-1 space-y-4">
+                            <!-- [DYNAMIC] 분석 리포트 카드가 이곳에 추가됩니다. -->
+                        </div>
+
+                        <!-- 분석 푸터 -->
+                        <div class="pt-2 px-1 text-center border-t border-dashed border-slate-100 mt-4">
+                            <p class="text-[9px] text-slate-400 font-medium italic">Advanced pattern tracking for the
+                                selected sequence is complete.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- LOADER -->
+    <div id="loader"
+        class="fixed inset-0 bg-slate-900/10 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="flex flex-col items-center">
+            <div class="w-8 h-8 border-3 border-blue-600/10 border-t-blue-600 rounded-full animate-spin"></div>
+            <p class="mt-4 text-[10px] font-black text-blue-600 tracking-widest uppercase">데이터 분석 중...
+            </p>
+        </div>
+    </div>
+    </div>
+
+    <div class="safe-pb"></div>
+
+    <script src="vertical-engine.js"></script>
+    <script>
+        // 1. 프리미엄 토스트 시스템
+        function showToast(message, duration = 500) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // 2. 루트 BinaryData.csv 자동 로딩 및 즉시 분석 실행
+        async function loadDefaultData() {
+            const DEFAULT_PATH = '../BinaryData.csv';
+            try {
+                const response = await fetch(DEFAULT_PATH);
+                if (!response.ok) throw new Error('파일을 찾을 수 없습니다.');
+                const text = await response.text();
+                lotteryData = parseBinaryCSV(text);
+                showToast(`🚀 데이터 로딩 완료 (${lotteryData.length}회차)`);
+
+                // [자동 실행] 데이터 로드 즉시 분석을 수행합니다.
+                runVerticalAnalysis();
+            } catch (err) {
+                console.warn('자동 로딩 실패:', err);
+                showToast('ℹ️ CSV 파일을 수동으로 선택해 주세요.', 1000);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDefaultData);
+
+        // TrendTab 스타일 렌더링 엔진 (파이썬 리포트 포맷 동기화)
+        const originalRenderPredictions = renderPredictions;
+        renderPredictions = function (preds) {
+            document.getElementById('analysisReportWrapper').classList.remove('hidden');
+            document.getElementById('historyArea').classList.remove('hidden');
+
+            const container = document.getElementById('predictionContainer');
+            container.innerHTML = '';
+
+            preds.forEach((p, idx) => {
+                const div = document.createElement('div');
+                div.className = `result-card ${idx === 0 ? 'ring-2 ring-blue-500/40' : ''}`;
+
+                const ballsHtml = p.numbers.map((n, i) => {
+                    const isStrong = p.strongPos && p.strongPos.includes(i);
+                    const strongClass = isStrong ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-slate-900 scale-110 mx-1' : '';
+                    return `<span class="lotto-ball ${getBallClass(n)} ${strongClass}">${n}</span>`;
+                }).join('');
+
+                const sum = p.numbers.reduce((a, b) => a + b, 0);
+                const ac = calcAC(p.numbers);
+                const sd = calcSD(p.numbers);
+                const odd = p.numbers.filter(n => n % 2 !== 0).length;
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-700 pb-2 mb-2">
+                        <div class="flex flex-col">
+                            <span class="text-indigo-400 font-black text-[14px] tracking-tight uppercase">순위 #${idx + 1} 예측 조합</span>
+                        </div>
+                        <span class="text-[10px] font-black text-blue-400 uppercase tracking-tighter ring-1 ring-blue-500/30 px-2 py-0.5 rounded-full bg-blue-500/5">${p.prob}% 신뢰도</span>
+                    </div>
+                    <div class="flex gap-2 justify-center py-2 flex-wrap">
+                        ${ballsHtml}
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-800 font-mono">
+                        <span>S: <b class="text-white">${p.start}</b></span>
+                        <span>G: <b class="text-white">${p.gaps.join('-')}</b></span>
+                        <span class="text-yellow-400 font-bold ml-auto flex items-center gap-0.5"><svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>H:${sum} | AC:${ac} | SD:${sd}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        };
+
+        function calcAC(nums) {
+            const diffs = new Set();
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = i + 1; j < nums.length; j++) {
+                    diffs.add(nums[j] - nums[i]);
+                }
+            }
+            return diffs.size - (nums.length - 1);
+        }
+
+        function calcSD(nums) {
+            const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+            const variance = nums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / nums.length;
+            return Math.sqrt(variance).toFixed(1);
+        }
+
+        let fullHistory = [];
+        let currentHistoryPos = 0;
+        const HISTORY_PAGE_SIZE = 20;
+
+        const originalRenderBacktest = renderBacktest;
+        renderBacktest = function (res) {
+            document.getElementById('avgHitsVal').textContent = res.avg;
+
+            // 분포 렌더링
+            const distDiv = document.getElementById('hitsDistribution');
+            distDiv.innerHTML = '';
+            const maxCount = Math.max(...Object.values(res.stats));
+            for (let i = 1; i <= 4; i++) {
+                const count = res.stats[i] || 0;
+                const h = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                distDiv.innerHTML += `
+                    <div class="flex flex-col items-center gap-1.5">
+                        <div class="w-full bg-slate-100 rounded-xl relative h-24 flex items-end overflow-hidden border border-slate-200/50">
+                            <div class="hit-bar bg-blue-600 flex items-start justify-center pt-1.5" style="height: ${h}%">
+                                <span class="text-[10px] font-black text-white ${h < 20 ? 'hidden' : ''}">${count}</span>
+                            </div>
+                            <span class="absolute inset-x-0 top-1.5 text-[10px] text-center font-black text-slate-500 ${h >= 20 ? 'hidden' : ''}">${count}</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-500 uppercase">${i}개 적중</span>
+                    </div>
+                `;
+            }
+
+            // 히스토리 초기화
+            fullHistory = res.list;
+            currentHistoryPos = 0;
+            document.getElementById('backtestList').innerHTML = '';
+
+            if (fullHistory.length > 0) {
+                document.getElementById('moreHistoryArea').classList.remove('hidden');
+                loadMoreHistory();
+            }
+        };
+
+        function loadMoreHistory() {
+            const listContainer = document.getElementById('backtestList');
+            const nextBatch = fullHistory.slice(currentHistoryPos, currentHistoryPos + HISTORY_PAGE_SIZE);
+
+            nextBatch.forEach(row => {
+                const div = document.createElement('div');
+                div.className = "result-card space-y-3";
+
+                const sum = row.actual.reduce((a, b) => a + b, 0);
+                const odd = row.actual.filter(n => n % 2 !== 0).length;
+                const ac = calcAC(row.actual);
+                const sd = calcSD(row.actual);
+
+                // [디자인 개선] 텍스트 대신 공에 직접 테두리 하이라이트 적용 (1-indexed 위치 기준)
+                const balls = row.actual.map((n, i) => {
+                    const isHit = row.matchedPositions && row.matchedPositions.includes(i + 1);
+                    const hitClass = isHit ? 'ring-2 ring-cyan-300 z-10 shadow-[0_0_10px_rgba(34,211,238,0.6)]' : 'opacity-40';
+                    return `<span class="lotto-ball ${getBallClass(n)} ${hitClass}">${n}</span>`;
+                }).join('');
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between gap-1 border-b border-slate-700 pb-2">
+                        <!-- 회차 정보 (좌측 고정) -->
+                        <div class="flex flex-col shrink-0 min-w-[45px]">
+                            <span class="text-indigo-400 font-black text-[12px] leading-none">${row.id}회</span>
+                            <span class="text-[7px] text-slate-500 font-bold uppercase tracking-tighter mt-1">검증</span>
+                        </div>
+                        
+                        <!-- 번호 영역 (중앙 유연) -->
+                        <div class="flex gap-1.5 flex-1 justify-center py-1 overflow-hidden">
+                            ${balls}
+                        </div>
+                        
+                        <!-- 적중수 (우측 고정) - 가로폭 최소화 -->
+                        <div class="flex items-center shrink-0 pl-1">
+                            <span class="text-slate-700 text-[9px] font-bold mx-0.5">|</span>
+                            <span class="text-blue-400 font-black text-[12px] min-w-[14px] text-center">${row.hits}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-[10px] pt-1.5 text-slate-400 font-mono">
+                        <span>H:<b class="text-white ml-0.5">${sum}</b></span>
+                        <span>O/E:<b class="text-white ml-0.5">${odd}:${row.actual.length - odd}</b></span>
+                        <span class="hidden xs:inline">AC:<b class="text-white ml-0.5">${ac}</b></span>
+                        <span>SD:<b class="text-white ml-0.5">${sd}</b></span>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+
+            currentHistoryPos += HISTORY_PAGE_SIZE;
+
+            if (currentHistoryPos >= fullHistory.length) {
+                document.getElementById('moreHistoryArea').classList.add('hidden');
+            }
+        }
+
+        function getBallClass(n) {
+            if (n <= 10) return "ball-y";
+            if (n <= 20) return "ball-b";
+            if (n <= 30) return "ball-r";
+            if (n <= 40) return "ball-g";
+            return "ball-v";
+        }
+
+        function switchTab(tabId) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+            const targetId = 'tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1);
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) targetContent.classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+                btn.classList.add('text-slate-500');
+            });
+
+            const activeBtn = document.getElementById(targetId + 'Btn');
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-500');
+                activeBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+            }
+        }
+    </script>
+</body>
+
+</html>

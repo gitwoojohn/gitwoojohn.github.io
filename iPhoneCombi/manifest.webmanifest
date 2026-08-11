@@ -1,0 +1,8 @@
+{
+  "name": "특정 번호대 조합도구",
+  "short_name": "조합도구",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#14151c",
+  "theme_color": "#14151c"
+}

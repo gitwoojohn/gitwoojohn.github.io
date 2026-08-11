@@ -1,0 +1,606 @@
+/* ============================================================================
+   CROSS-BROWSER VARIABLES & RESET
+   ========================================================================= */
+/* ============================================================================
+   CROSS-BROWSER VARIABLES & RESET
+   ========================================================================= */
+:root {
+    /* [요청하신 변경 사항] 기존 common.css의 색상 테마로 복구 */
+    --bg: #0d1117;
+    /* 기존 배경색 (Deep Dark Blue-Gray) */
+    --card: #21262d;
+    /* 기존 카드색 */
+    --border: #30363d;
+    /* 기존 테두리색 */
+    --text: #c9d1d9;
+    /* 기존 텍스트색 (약간 회색빛 흰색) */
+
+    --accent: #58a6ff;
+    /* 기존 포인트 컬러 (Blue) */
+    --highlight: #f2cc60;
+    /* 기존 강조 컬러 (Gold) */
+    --text-sub: #8b949e;
+    /* 보조 텍스트 */
+
+    /* 로또 공 색상 (기존 유지) */
+    --color-1: #f2cc60;
+    --color-10: #58a6ff;
+    --color-20: #ff7b72;
+    --color-30: #8b949e;
+    --color-40: #3fb950;
+
+    /* Safe Area 기본값 (아이폰 노치 대응용 유지) */
+    --safe-top: 0px;
+    --safe-bottom: 0px;
+    --safe-left: 0px;
+    --safe-right: 0px;
+
+    --divider-color: #38383a;
+
+    /* 헤더 높이 */
+    --header-height: 110px;
+}
+
+/* iOS 환경에서만 env 변수 덮어쓰기 (유지) */
+@supports (padding-top: env(safe-area-inset-top)) {
+    :root {
+        --safe-top: env(safe-area-inset-top);
+        --safe-bottom: env(safe-area-inset-bottom);
+        --safe-left: env(safe-area-inset-left);
+        --safe-right: env(safe-area-inset-right);
+    }
+}
+
+/* iOS 환경에서만 env 변수 덮어쓰기 */
+@supports (padding-top: env(safe-area-inset-top)) {
+    :root {
+        --safe-top: env(safe-area-inset-top);
+        --safe-bottom: env(safe-area-inset-bottom);
+        --safe-left: env(safe-area-inset-left);
+        --safe-right: env(safe-area-inset-right);
+    }
+}
+
+/* ============================================================================
+   RESET & SCROLLBAR HIDING
+   ========================================================================= */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+
+    /* Firefox */
+    scrollbar-width: none;    
+    /* IE 10+, Edge */
+    -ms-overflow-style: none;
+}
+
+/* Chrome, Safari, Samsung Internet, Edge (Chromium) 스크롤바 숨김 */
+*::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent;
+    -webkit-appearance: none;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+
+    /* Safe Area 및 헤더 높이 반영 */
+    padding-top: calc(var(--safe-top) + var(--header-height));
+    padding-bottom: calc(var(--safe-bottom) + 20px);
+
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+
+    /* ★ 수정된 부분: 호환성 접두사 필수 적용 ★ */
+    -webkit-text-size-adjust: 100%;
+    /* Safari(iOS), Chrome, Edge용 */
+    -moz-text-size-adjust: 100%;
+    /* Firefox(Mobile)용 */
+    text-size-adjust: 100%;
+    /* 표준 (미래 호환용) */
+}
+
+/* 텍스트 드래그 방지 */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input,
+textarea,
+[contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* ============================================================================
+   HEADER & NAVIGATION
+   ========================================================================= */
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+
+    background: rgba(28, 28, 30, 0.85);
+    /* 블러 효과 순서 준수 */
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+
+    border-bottom: 0.5px solid var(--border);
+    padding-top: var(--safe-top);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    padding: 0 20px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    cursor: default;
+}
+
+.brand-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+}
+
+.upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.upload-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* SCROLLABLE TABS */
+.scroll-nav {
+    width: 100%;
+    overflow-x: auto;
+    /* -webkit-overflow-scrolling: touch; 제거됨 (최신 브라우저 기본 지원) */
+    padding: 10px 15px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+}
+
+.tab-navigation {
+    display: inline-flex;
+    gap: 10px;
+    margin: 0;
+}
+
+.tab-btn {
+    background: transparent;
+    color: var(--text-sub);
+    border: none;
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.tab-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    background: var(--accent);
+    color: white;
+}
+
+/* ============================================================================
+   MAIN CONTENT
+   ========================================================================= */
+.main-content {
+    padding: 20px 5px 10px 10px;
+    width: 100%;
+    max-width: 430px;
+}
+
+.app-container {
+    display: block;
+    height: auto;
+}
+
+.sidebar {
+    display: none !important;
+}
+
+.report-panel-mobile {
+    background: var(--card);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+    line-height: 1.4;
+}
+
+/* ============================================================================
+   FORMS & INPUTS
+   ========================================================================= */
+input[type="number"],
+input[type="text"],
+select {
+    width: 100%;
+    height: 48px;
+    background: #2c2c2e;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: white;
+    padding: 0 15px;
+    font-size: 16px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin-bottom: 5px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--accent);
+}
+
+/* 크롬 자동완성 배경색 처리 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #2c2c2e inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.btn-primary {
+    width: 100%;
+    height: 50px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+}
+
+.btn-primary:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+.pattern-input-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group label {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    margin-left: 5px;
+}
+
+.input-group:has(button),
+.input-group.button-container,
+#searchPattern,
+#btn-custom-search,
+#btn-sort-toggle {
+    grid-column: 1 / -1;
+}
+
+
+.result-card,
+.chart-container,
+.pattern-results,
+.kpi-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 0px;
+    width: 100% !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    margin: 0;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 250px;
+}
+
+/* ============================================================================
+   TOAST MESSAGE
+   ========================================================================= */
+#toast-container {
+    position: fixed;
+    bottom: 30px;
+    width: 90%;
+    left: 5%;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #toast-container {
+        bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+}
+
+.toast-message {
+    background-color: rgba(40, 40, 40, 0.95);
+
+    /* 블러 효과 호환성 순서 준수 */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    padding: 16px;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* ============================================================================
+   REMOVED INLINE STYLES (Clean Code Update)
+   ========================================================================= */
+
+/* 1. 파일 업로드 인풋 숨김 */
+#csvFile {
+    display: none;
+}
+
+/* 2. 안내 문구 (이월곱 탭 등) */
+.empty-message {
+    text-align: center;
+    color: var(--text-sub);
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+/* 3. 히스토리 섹션 간격 (합계예측 탭) */
+.history-section {
+    margin-top: 20px;
+}
+
+/* 4. 체크박스 컨테이너 (이월분석 탭) - Flex 적용 */
+.checkbox-container {
+    display: flex !important;
+    /* 그리드 설정 덮어쓰기 */
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    height: 48px;
+    background: #2c2c2e;
+    /* 입력창과 동일한 배경 */
+    padding: 0 15px;
+    border-radius: 10px;
+}
+
+/* 체크박스 본체 스타일 */
+.checkbox-container input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+    /* 브랜드 컬러 적용 */
+}
+
+/* 체크박스 라벨 스타일 */
+.checkbox-container label {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text);
+    cursor: pointer;
+    flex: 1;
+    /* 남은 공간 차지 (터치 영역 확대) */
+}
+
+/* ============================================================================
+   TAB VISIBILITY & ANIMATION OPTIMIZATION
+   ========================================================================= */
+
+/* 1. 기본 상태: 숨김 & GPU 렌더링 준비 */
+.tab-content {
+    display: none;
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    will-change: opacity, transform;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+/* 리포트 텍스트 상태별 색상 (JS에서 클래스로 제어) */
+.report-content {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    /* 기본 회색 */
+    transition: color 0.3s ease;
+}
+
+/* 로딩 중일 때 (노란색 계열) */
+.report-content.loading {
+    color: var(--highlight);
+}
+
+/* 완료 되었을 때 (밝은 회색) */
+.report-content.success {
+    color: #8e8e93;
+}
+
+/* ============================================================================
+   MINIMAL BALL DESIGN (글자색과 테두리만 사용)
+   ========================================================================= */
+.balls-container {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.ball {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: transparent;
+    /* 배경 제거 */
+    border: 2px solid;
+    /* 테두리만 유지 */
+    transition: all 0.2s ease;
+}
+
+/* 구간별 테두리 및 글자색 (변수 활용) */
+.ball.range-1 {
+    border-color: var(--color-1);
+    color: var(--color-1);
+}
+
+.ball.range-10 {
+    border-color: var(--color-10);
+    color: var(--color-10);
+}
+
+.ball.range-20 {
+    border-color: var(--color-20);
+    color: var(--color-20);
+}
+
+.ball.range-30 {
+    border-color: var(--color-30);
+    color: var(--color-30);
+}
+
+.ball.range-40 {
+    border-color: var(--color-40);
+    color: var(--color-40);
+}
+
+.ball.bonus {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.ball.empty {
+    border-color: var(--border);
+    color: var(--text-sub);
+}
+
+/* [사용자 정답] 애니메이션 로직 유지 */
+.tab-content {
+    display: none;
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    will-change: opacity, transform;
+}
+
+.tab-content.active {
+    display: block !important;
+    animation: fadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.divider {
+    width: 1px;
+    height: 32px;
+    background-color: var(--divider-color);
+    margin: 0 4px;
+    flex-shrink: 0;
+}

@@ -1,0 +1,118 @@
+.stats-badge-group {
+    display: flex;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.stat-badge strong {
+    color: var(--highlight);
+    /* 강조색 */
+}
+
+.stat-badge {
+    color: var(--accent);
+    /* 강조색 */
+}
+
+/* 간격 최적화 */
+.result-numbers-row {
+    flex-wrap: nowrap !important;
+    /* 절대 줄바꿈 금지 */
+    gap: 15px !important;
+}
+
+.analysis-stats-compact {
+    display: flex;
+    gap: 6px;
+    font-size: 1.0rem;
+    white-space: nowrap;
+}
+
+.result-round.small {
+    min-width: 45px;
+    font-size: 1.0rem;
+}
+
+.divider.small {
+    margin: 0 2px;
+}
+
+/* tab-total-list 전용 스타일 */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.search-control label {
+    font-size: 0.85rem;
+    color: #8b949e;
+}
+
+.search-control input {
+    width: 80px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.search-control input:focus {
+    border-color: var(--accent);
+}
+
+.btn-search {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-reset {
+    background: transparent;
+    color: #8b949e;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-reset:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* 통계 텍스트 강조 */
+.analysis-stats-compact span strong {
+    color: var(--highlight);
+    margin-left: 3px;
+}

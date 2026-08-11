@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>전체 회차 보기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* 모바일 터치 최적화 */
+      input,
+      button {
+        min-height: 44px;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        height: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 min-h-screen p-3 md:p-6 text-slate-900">
+    <div class="max-w-7xl mx-auto">
+      <header class="mb-6 md:mb-8">
+        <div
+          class="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 p-4 md:p-6"
+        >
+          <div
+            class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl"
+          ></div>
+          <div
+            class="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-slate-900/10 blur-3xl"
+          ></div>
+          <div class="flex flex-wrap items-center gap-3">
+            <span
+              class="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-3 py-1 text-xs font-bold text-blue-700"
+            >
+              <span
+                class="inline-block h-2 w-2 rounded-full bg-blue-600"
+              ></span>
+              RoundView Tab
+            </span>
+            <h1
+              class="text-2xl md:text-3xl font-black tracking-tight text-slate-900"
+            >
+              전체 회차 보기
+            </h1>
+          </div>
+          <div
+            class="mt-3 h-1.5 w-20 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-slate-900"
+          ></div>
+          <p class="mt-3 text-sm md:text-base text-gray-600">
+            CSV에서 로딩한 전체 회차를 100개 단위로 표시합니다.
+          </p>
+        </div>
+      </header>
+
+      <section
+        class="bg-white rounded-xl shadow-sm border border-slate-200 p-4"
+      >
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            type="file"
+            id="csvFile"
+            accept=".csv"
+            class="sr-only"
+            aria-label="CSV 파일 선택"
+          />
+          <label
+            for="csvFile"
+            class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 active:translate-y-px"
+            title="CSV 파일 선택"
+          >
+            <svg
+              class="h-4 w-4 text-blue-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              />
+            </svg>
+            파일 선택
+          </label>
+
+          <div class="text-xs text-slate-500" id="summaryInfo"></div>
+        </div>
+      </section>
+
+      <section id="listArea" class="mt-4 space-y-3"></section>
+
+      <div class="mt-4 flex justify-center">
+        <button
+          id="loadMoreBtn"
+          class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 active:scale-[0.98]"
+        >
+          다음 100개 보기
+        </button>
+      </div>
+    </div>
+
+    <div class="fixed bottom-4 right-4 flex flex-col gap-2">
+      <button
+        id="scrollTopBtn"
+        class="rounded-full bg-slate-900/40 px-3 py-2 text-lg font-bold leading-none text-white shadow-lg ring-1 ring-slate-800/20 transition hover:bg-slate-900/60"
+        aria-label="맨 위로 이동"
+      >
+        ˄
+      </button>
+      <button
+        id="scrollBottomBtn"
+        class="rounded-full bg-slate-900/40 px-3 py-2 text-lg font-bold leading-none text-white shadow-lg ring-1 ring-slate-800/20 transition hover:bg-slate-900/60"
+        aria-label="맨 아래로 이동"
+      >
+        ˅
+      </button>
+    </div>
+
+    <script>
+      const PAGE_SIZE = 100;
+      const DEFAULT_CSV_URL = "https://gitwoojohn.github.io/ReadWeb-WinningNumbers.csv";
+
+      let allData = [];
+      let renderIndex = 0;
+
+      const listArea = document.getElementById("listArea");
+      const loadMoreBtn = document.getElementById("loadMoreBtn");
+      const summaryInfo = document.getElementById("summaryInfo");
+      const scrollTopBtn = document.getElementById("scrollTopBtn");
+      const scrollBottomBtn = document.getElementById("scrollBottomBtn");
+
+      function parseCSV(csvText) {
+        const lines = csvText.split(/\r?\n/);
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim() === "") continue;
+          const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          if (row) data.push(row.map((cell) => cell.replace(/"/g, "").trim()));
+        }
+        return data;
+      }
+
+      function calcAC(nums) {
+        const diffs = new Set();
+        for (let i = 0; i < nums.length; i++) {
+          for (let j = i + 1; j < nums.length; j++) {
+            diffs.add(nums[j] - nums[i]);
+          }
+        }
+        return diffs.size - (nums.length - 1);
+      }
+
+      function calcSD(nums) {
+        const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+        const variance =
+          nums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / nums.length;
+        return Math.sqrt(variance);
+      }
+
+      function getBallColor(n) {
+        if (n <= 10) return "bg-yellow-400 text-slate-900";
+        if (n <= 20) return "bg-blue-500 text-white";
+        if (n <= 30) return "bg-red-500 text-white";
+        if (n <= 40) return "bg-slate-500 text-white";
+        return "bg-green-500 text-white";
+      }
+
+      function formatDateLabel(value) {
+        if (!value) return "";
+        if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(2);
+        if (/^\d{2}-\d{2}-\d{2}/.test(value)) return value;
+        return value;
+      }
+
+      function normalizeRows(rows) {
+        const normalized = rows
+          .filter((row) => row && row[0])
+          .map((row) => {
+            const round = parseInt(row[0], 10);
+            const date = row[1] ? String(row[1]).trim() : "";
+            const nums = row.slice(2, 8).map((n) => parseInt(n, 10));
+            const bonus = parseInt(row[8], 10);
+            const sum = row[9]
+              ? parseFloat(String(row[9]).replace(/,/g, ""))
+              : nums.reduce((a, b) => a + b, 0);
+            return {
+              round,
+              date,
+              nums,
+              bonus,
+              sum,
+            };
+          })
+          .filter((row) => !Number.isNaN(row.round));
+
+        normalized.sort((a, b) => b.round - a.round);
+        return normalized;
+      }
+
+      function renderNext() {
+        const slice = allData.slice(renderIndex, renderIndex + PAGE_SIZE);
+        slice.forEach((row) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-slate-900 text-white p-3 rounded-xl shadow-lg space-y-2 font-mono text-left overflow-visible";
+
+          const odd = row.nums.filter((n) => n % 2 !== 0).length;
+          const ac = calcAC(row.nums);
+          const sd = calcSD(row.nums).toFixed(1);
+          const dateLabel = formatDateLabel(row.date);
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-2 border-b border-slate-700 pb-3">
+              <div class="flex flex-col">
+                <span class="text-indigo-400 font-black text-lg">${row.round}회</span>
+                ${dateLabel ? `<span class="text-[10px] text-slate-400">${dateLabel}</span>` : ""}
+              </div>
+              <div class="flex gap-2 flex-1 justify-center overflow-x-auto overflow-y-visible py-1">
+                ${row.nums
+                  .map(
+                    (n) =>
+                      `<span class="w-7 h-7 shrink-0 ${getBallColor(
+                        n,
+                      )} rounded-full flex items-center justify-center text-xs font-bold shadow-sm">${n}</span>`,
+                  )
+                  .join("")}
+              </div>
+              <span class="w-7 h-7 shrink-0 bg-amber-500 rounded-full flex items-center justify-center text-[12px] font-bold text-black shadow-sm">${row.bonus}</span>
+            </div>
+            <div class="flex justify-between text-[11px] pt-1 text-slate-300">
+              <span>합계: <b class="text-white">${row.sum}</b></span>
+              <span>홀짝: <b class="text-white">${odd}:${6 - odd}</b></span>
+              <span>AC: <b class="text-white">${ac}</b></span>
+              <span>SD: <b class="text-white">${sd}</b></span>
+            </div>
+          `;
+          listArea.appendChild(card);
+        });
+
+        renderIndex += slice.length;
+        updateSummary();
+
+        if (renderIndex >= allData.length) {
+          loadMoreBtn.classList.add("hidden");
+        } else {
+          loadMoreBtn.classList.remove("hidden");
+        }
+      }
+
+      function updateSummary() {
+        if (!summaryInfo) return;
+        if (allData.length === 0) {
+          summaryInfo.textContent = "";
+          return;
+        }
+        summaryInfo.textContent = `총 ${allData.length}회차 · 표시 ${Math.min(
+          renderIndex,
+          allData.length,
+        )}회`;
+      }
+
+      function loadData(rows) {
+        allData = normalizeRows(rows);
+        renderIndex = 0;
+        listArea.innerHTML = "";
+        renderNext();
+      }
+
+      async function loadDefaultCSV() {
+        try {
+          const response = await fetch(DEFAULT_CSV_URL, { cache: "no-store" });
+          if (!response.ok) return;
+          const buffer = await response.arrayBuffer();
+          let text = "";
+          try {
+            text = new TextDecoder("euc-kr").decode(buffer);
+          } catch (err) {
+            text = new TextDecoder("utf-8").decode(buffer);
+          }
+          loadData(parseCSV(text));
+        } catch (err) {
+          console.warn("CSV 자동 로딩 실패:", err);
+        }
+      }
+
+      document.getElementById("csvFile").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          loadData(parseCSV(event.target.result));
+        };
+        reader.readAsText(file, "euc-kr");
+      });
+
+      loadMoreBtn.addEventListener("click", () => {
+        renderNext();
+      });
+
+      scrollTopBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      scrollBottomBtn.addEventListener("click", () => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
+        });
+      });
+
+      window.addEventListener("DOMContentLoaded", () => {
+        loadDefaultCSV();
+      });
+    </script>
+  </body>
+</html>

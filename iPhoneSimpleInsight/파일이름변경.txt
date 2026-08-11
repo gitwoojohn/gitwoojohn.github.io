@@ -1,0 +1,11 @@
+기존 파일명 (js/),새로운 파일명 (js/),연결된 HTML ID
+tab-analysis.js,👉 tab-main-chart.js,#main-chart
+tab-pattern.js,👉 tab-pattern-analysis.js,#pattern-analysis
+tab-stats.js,👉 tab-carryover-sum.js,#carryover-sum
+tab-stats-multi.js,👉 tab-carryover-product.js,#carryover-product
+tab-custom-search.js,👉 tab-round-sum.js,#round-sum
+tab-round-flow.js,👉 tab-round-flow.js (유지),#round-flow
+tab-pattern-search.js,👉 tab-number-appearance.js,#number-appearance
+tab-analysis-sum.js,👉 tab-sum-prediction.js,#sum-prediction
+tab-carryover.js,👉 tab-carryover-analysis.js,#carryover-analysis
+common.js,👉 common.js (유지),-

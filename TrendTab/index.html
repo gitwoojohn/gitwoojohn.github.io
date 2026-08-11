@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>보너스 번호 분석기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .result-table th,
+      .result-table td {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .result-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+      }
+      .summary-card {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+      }
+      /* 모바일 터치 최적화 */
+      input,
+      button {
+        min-height: 44px;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        height: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 min-h-screen p-3 md:p-6 text-slate-900">
+    <div class="max-w-7xl mx-auto">
+      <header class="mb-6 md:mb-8">
+        <div
+          class="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 p-4 md:p-6"
+        >
+          <div
+            class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl"
+          ></div>
+          <div
+            class="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-slate-900/10 blur-3xl"
+          ></div>
+          <div class="flex flex-wrap items-center gap-3">
+            <span
+              class="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-3 py-1 text-xs font-bold text-blue-700"
+            >
+              <span
+                class="inline-block h-2 w-2 rounded-full bg-blue-600"
+              ></span>
+              Trend Tab
+            </span>
+            <h1
+              class="text-2xl md:text-3xl font-black tracking-tight text-slate-900"
+            >
+              <svg
+                class="inline-block h-7 w-7 -mt-1 mr-2 text-blue-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v18h18" />
+                <path d="M7 14l4-4 3 3 5-6" />
+                <circle cx="7" cy="14" r="1" />
+                <circle cx="11" cy="10" r="1" />
+                <circle cx="14" cy="13" r="1" />
+                <circle cx="19" cy="7" r="1" />
+              </svg>
+              보너스 번호 분석기
+            </h1>
+          </div>
+          <div
+            class="mt-3 h-1.5 w-20 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-slate-900"
+          ></div>
+          <p class="mt-3 text-sm md:text-base text-gray-600">
+            특정 보너스 번호 출현 다음 회차의 패턴을 분석합니다.
+          </p>
+        </div>
+      </header>
+
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-4">
+        <!-- 설정 영역 -->
+        <div class="summary-card col-span-1">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h2 class="text-lg font-semibold text-blue-800">번호 검색</h2>
+          </div>
+
+          <div class="mb-4 flex items-center gap-2">
+            <input
+              type="file"
+              id="csvFile"
+              accept=".csv"
+              class="sr-only"
+              aria-label="CSV 파일 선택"
+            />
+            <label
+              for="csvFile"
+              class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 active:translate-y-px"
+              title="CSV 파일 선택"
+            >
+              <svg
+                class="h-4 w-4 text-blue-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                />
+              </svg>
+              파일 선택
+            </label>
+            <input
+              type="number"
+              id="targetNum"
+              min="1"
+              max="45"
+              value="1"
+              class="w-24 p-2 border border-slate-300 rounded-md text-center focus:ring-2 focus:ring-blue-500 outline-none"
+              title="분석할 보너스 번호를 입력하세요."
+              aria-label="보너스 번호 입력"
+            />
+            <button
+              onclick="analyzeData()"
+              class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 active:scale-[0.98]"
+              aria-label="분석 실행"
+            >
+              분석 실행
+            </button>
+          </div>
+          <p id="csvStatus" class="mt-2 text-xs text-slate-500"></p>
+        </div>
+
+        <!-- 요약 결과 영역 -->
+        <div
+          id="summaryArea"
+          class="summary-card col-span-1 md:col-span-2 hidden"
+        >
+          <h2 class="text-lg font-semibold mb-4 text-blue-800">분석 요약</h2>
+          <div
+            id="summaryContent"
+            class="grid grid-cols-2 gap-3 md:gap-4 text-center"
+          >
+            <!-- JS에서 데이터 삽입 -->
+          </div>
+          <div id="topFiveArea" class="mt-6">
+            <h3 class="font-bold text-gray-700 mb-2 border-t pt-4">
+              최다 빈도 번호 TOP 5
+            </h3>
+            <ul
+              id="topFiveList"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"
+            ></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 상세 리스트 영역 -->
+      <section id="detailArea" class="summary-card hidden">
+        <h2 class="text-lg font-semibold mb-4 text-blue-800">
+          상세 리스트 (다음 회차 결과)
+        </h2>
+        <div id="detailBody" class="space-y-3"></div>
+      </section>
+    </div>
+
+    <script>
+      let rawData = [];
+      const DEFAULT_CSV_URL = "https://gitwoojohn.github.io/ReadWeb-WinningNumbers.csv";
+      const csvStatus = document.getElementById("csvStatus");
+
+      function updateCsvStatus(message, tone = "neutral") {
+        if (!csvStatus) return;
+        const toneClass =
+          tone === "success"
+            ? "text-emerald-600"
+            : tone === "error"
+              ? "text-rose-600"
+              : "text-slate-500";
+        csvStatus.className = `mt-2 text-xs ${toneClass}`;
+        csvStatus.textContent = message;
+      }
+
+      async function loadDefaultCSV() {
+        try {
+          const response = await fetch(DEFAULT_CSV_URL, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const buffer = await response.arrayBuffer();
+          let text = "";
+          try {
+            text = new TextDecoder("euc-kr").decode(buffer);
+          } catch (err) {
+            text = new TextDecoder("utf-8").decode(buffer);
+          }
+          rawData = parseCSV(text);
+        } catch (err) {
+          console.warn("CSV 자동 로딩 실패:", err);
+        }
+      }
+
+      document
+        .getElementById("csvFile")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          updateCsvStatus("선택한 CSV 로딩 중...");
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            rawData = parseCSV(event.target.result);
+            updateCsvStatus(`파일 로딩 완료 (${rawData.length}행)`, "success");
+          };
+          reader.readAsText(file, "euc-kr");
+        });
+
+      function parseCSV(csvText) {
+        const lines = csvText.split(/\r?\n/);
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim() === "") continue;
+          const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          if (row) data.push(row.map((cell) => cell.replace(/"/g, "").trim()));
+        }
+        return data;
+      }
+
+      function formatDateLabel(value) {
+        if (!value) return "";
+        if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(2);
+        if (/^\d{2}-\d{2}-\d{2}/.test(value)) return value;
+        return value;
+      }
+
+      function calcAC(nums) {
+        const diffs = new Set();
+        for (let i = 0; i < nums.length; i++) {
+          for (let j = i + 1; j < nums.length; j++) {
+            diffs.add(nums[j] - nums[i]);
+          }
+        }
+        return diffs.size - (nums.length - 1);
+      }
+
+      function calcSD(nums) {
+        const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+        const variance =
+          nums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / nums.length;
+        return Math.sqrt(variance);
+      }
+
+      function getBallColor(n) {
+        if (n <= 10) return "bg-yellow-400 text-slate-900";
+        if (n <= 20) return "bg-blue-500 text-white";
+        if (n <= 30) return "bg-red-500 text-white";
+        if (n <= 40) return "bg-slate-500 text-white";
+        return "bg-green-500 text-white";
+      }
+
+      function analyzeData() {
+        if (rawData.length === 0) {
+          alert("CSV 파일을 먼저 로드해주세요.");
+          return;
+        }
+        const targetNum = parseInt(document.getElementById("targetNum").value);
+        if (isNaN(targetNum) || targetNum < 1 || targetNum > 45) {
+          alert("1-45 사이의 번호를 입력해주세요.");
+          return;
+        }
+
+        const freq = Array(46).fill(0);
+        let totalRounds = 0,
+          totalSum = 0,
+          carryOver = 0;
+        const details = [];
+        const sortedData = [...rawData].sort(
+          (a, b) => parseInt(a[0]) - parseInt(b[0]),
+        );
+
+        for (let i = 0; i < sortedData.length - 1; i++) {
+          if (parseInt(sortedData[i][8]) === targetNum) {
+            const next = sortedData[i + 1];
+            totalRounds++;
+            const roundSum = parseFloat(next[9].replace(/,/g, ""));
+            totalSum += roundSum;
+            const winNums = [];
+            let isCarry = false;
+            for (let j = 2; j <= 7; j++) {
+              const n = parseInt(next[j]);
+              freq[n]++;
+              winNums.push(n);
+              if (n === targetNum) isCarry = true;
+            }
+            const nBonus = parseInt(next[8]);
+            if (nBonus === targetNum) isCarry = true;
+            if (isCarry) carryOver++;
+            details.push({
+              id: next[0],
+              date: next[1],
+              nums: winNums,
+              bonus: nBonus,
+              sum: roundSum,
+            });
+          }
+        }
+
+        if (totalRounds > 0)
+          displayResults(
+            totalRounds,
+            totalSum,
+            carryOver,
+            freq,
+            details,
+            targetNum,
+          );
+        else alert("데이터가 부족합니다.");
+      }
+
+      function displayResults(total, sum, carry, freq, details, target) {
+        document.getElementById("summaryArea").classList.remove("hidden");
+        document.getElementById("detailArea").classList.remove("hidden");
+        const avgSum = (sum / total).toFixed(1);
+
+        document.getElementById("summaryContent").innerHTML = `
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                    <p class="text-[12px] uppercase tracking-wider text-slate-500 font-bold mb-1">분석 사례</p>
+                    <p class="text-2xl font-black text-slate-800">${total}<span class="text-sm ml-1 font-normal text-slate-400">회</span></p>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                    <p class="text-[12px] uppercase tracking-wider text-slate-500 font-bold mb-1">평균 합계</p>
+                    <p class="text-2xl font-black text-slate-800">${avgSum}</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <p class="text-[12px] uppercase tracking-wider text-blue-500 font-bold mb-1">이월 횟수</p>
+                    <p class="text-2xl font-black text-blue-700">${carry}<span class="text-sm ml-1 font-normal text-blue-400">회</span></p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <p class="text-[12px] uppercase tracking-wider text-blue-500 font-bold mb-1">이월 확률</p>
+                    <p class="text-2xl font-black text-blue-700">${((carry / total) * 100).toFixed(1)}%</p>
+                </div>
+            `;
+
+        const sortedFreq = [];
+        for (let i = 1; i <= 45; i++)
+          if (freq[i] > 0) sortedFreq.push({ num: i, count: freq[i] });
+        sortedFreq.sort((a, b) => b.count - a.count);
+
+        const topFiveList = document.getElementById("topFiveList");
+        topFiveList.innerHTML = "";
+        sortedFreq.slice(0, 5).forEach((item, index) => {
+          const li = document.createElement("li");
+          li.className =
+            "flex justify-between items-center p-2.5 bg-white border rounded-md border-slate-100";
+          li.innerHTML = `<span><span class="text-slate-400 mr-2">${index + 1}</span><b class="text-blue-600">${item.num}</b><span class="text-slate-400 ml-1">번</span></span> <span class="text-slate-500 font-medium">${item.count}회</span>`;
+          topFiveList.appendChild(li);
+        });
+
+        const body = document.getElementById("detailBody");
+        body.innerHTML = "";
+        [...details].reverse().forEach((d) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-slate-900 text-white p-3 rounded-xl shadow-lg space-y-2 font-mono text-left overflow-visible";
+
+          const odd = d.nums.filter((n) => n % 2 !== 0).length;
+          const ac = calcAC(d.nums);
+          const sd = calcSD(d.nums).toFixed(1);
+          const dateLabel = formatDateLabel(d.date);
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-2 border-b border-slate-700 pb-3">
+              <div class="flex flex-col">
+                <span class="text-indigo-400 font-black text-lg">${d.id}회</span>
+              </div>
+              <div class="flex gap-1 flex-1 justify-center overflow-x-auto overflow-y-visible py-1">
+                ${d.nums
+                  .map(
+                    (n) =>
+                      `<span class="w-7 h-7 shrink-0 ${getBallColor(n)} rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${n === target ? "ring-2 ring-rose-400 scale-110 z-10" : ""}">${n}</span>`,
+                  )
+                  .join("")}
+              </div>
+              <span class="w-7 h-7 shrink-0 bg-amber-500 rounded-full flex items-center justify-center text-[12px] font-bold text-black shadow-sm ${d.bonus === target ? "ring-2 ring-rose-400 scale-110" : ""}">${d.bonus}</span>
+            </div>
+            <div class="flex justify-between text-[11px] pt-1 text-slate-300">
+              <span>합계: <b class="text-white">${d.sum}</b></span>
+              <span>홀짝: <b class="text-white">${odd}:${6 - odd}</b></span>
+              <span>AC: <b class="text-white">${ac}</b></span>
+              <span>SD: <b class="text-white">${sd}</b></span>
+            </div>
+          `;
+          body.appendChild(card);
+        });
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        loadDefaultCSV();
+      });
+    </script>
+  </body>
+</html>
