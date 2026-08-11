@@ -107,8 +107,7 @@ function renderHotCold(sorted) {
         .map(
             (x) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#ef4444">${x.d}</span> 끝수 ${x.d}</span>
-                <span class="cnt">${x.v}회</span>
+                <span><span class="d" style="background:#ef4444">${x.d}</span> <span class="cnt">${x.v}회</span></span>
             </div>`
         )
         .join('');
@@ -119,8 +118,7 @@ function renderHotCold(sorted) {
         .map(
             (x) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#64748b">${x.d}</span> 끝수 ${x.d}</span>
-                <span class="cnt">${x.v}회</span>
+                <span><span class="d" style="background:#64748b">${x.d}</span> <span class="cnt">${x.v}회</span></span>
             </div>`
         )
         .join('');
@@ -171,7 +169,6 @@ function calcSD(nums) {
 }
 
 function generatePredictions(freq) {
-    const usedDigits = new Set();
     const usedNums = new Set();
     const picks = [];
 
@@ -186,7 +183,6 @@ function generatePredictions(freq) {
             if (!usedNums.has(n) && !nums.includes(n)) {
                 nums.push(n);
                 usedNums.add(n);
-                usedDigits.add(d);
             }
         }
         if (nums.length === 6) {
@@ -221,11 +217,6 @@ function generatePredictions(freq) {
                     </div>
                 </div>`;
         })
-        .join('');
-
-    const digitSummary = [...usedDigits].sort((a, b) => a - b);
-    $('predictDigits').innerHTML = digitSummary
-        .map((d) => `<span class="dg">끝수 ${d}</span>`)
         .join('');
 }
 
