@@ -199,7 +199,7 @@ function generatePredictions(freq) {
             const ballsHtml = nums
                 .map(
                     (n) =>
-                        `<span class="w-7 h-7 shrink-0 ${ballClass(n)} rounded-full flex items-center justify-center text-xs font-bold shadow-sm">${n}</span>`
+                        `<span class="w-8 h-8 shrink-0 ${ballClass(n)} rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">${n}</span>`
                 )
                 .join('');
             return `

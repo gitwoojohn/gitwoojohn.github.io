@@ -26,7 +26,7 @@
     <main class="container">
 
         <!-- 끝수 빈도 차트 -->
-        <section class="card">
+        <section class="card card-chart">
             <div class="card-head">
                 <h2>끝수 빈도 (최근 20회)</h2>
                 <span id="totalCount" class="badge badge-blue">0회</span>
@@ -34,17 +34,21 @@
             <div id="digitChart" class="digit-chart"></div>
         </section>
 
+        <div class="section-divider"></div>
+
         <!-- 핫 / 콜드 끝수 -->
         <section class="grid-2">
-            <div class="card">
+            <div class="card card-hot">
                 <h2 class="card-head-only">🔥 핫 끝수 TOP 3</h2>
                 <div id="hotList" class="digit-list"></div>
             </div>
-            <div class="card">
+            <div class="card card-cold">
                 <h2 class="card-head-only">❄️ 콜드 끝수 TOP 3</h2>
                 <div id="coldList" class="digit-list"></div>
             </div>
         </section>
+
+        <div class="section-divider"></div>
 
         <!-- 예측 조합 -->
         <section class="card card-predict">

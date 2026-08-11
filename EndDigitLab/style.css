@@ -110,6 +110,24 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+.section-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #475569, transparent);
+    margin: 0.15rem 0;
+}
+
+.card-chart {
+    border-left: 3px solid #38bdf8;
+}
+
+.card-hot {
+    border-left: 3px solid #ef4444;
+}
+
+.card-cold {
+    border-left: 3px solid #64748b;
+}
+
 .card-head {
     display: flex;
     align-items: center;
@@ -308,6 +326,8 @@ body {
 
 .w-7 { width: 1.75rem; }
 .h-7 { height: 1.75rem; }
+.w-8 { width: 2rem; }
+.h-8 { height: 2rem; }
 
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-visible { overflow-y: visible; }
