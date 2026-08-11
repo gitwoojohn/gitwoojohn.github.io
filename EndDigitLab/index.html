@@ -54,7 +54,13 @@
         <section class="card card-predict">
             <div class="card-head">
                 <h2>🎯 예측 조합 (끝수 기반)</h2>
-                <button id="btnGenerate" class="gen-btn" type="button">다시 생성</button>
+                <div class="predict-controls">
+                    <label class="mode-toggle">
+                        <input type="checkbox" id="randomModeToggle">
+                        <span>랜덤 모드</span>
+                    </label>
+                    <button id="btnGenerate" class="gen-btn" type="button">다시 생성</button>
+                </div>
             </div>
             <div id="predictArea" class="predict-area">
                 <p class="hint">데이터 로딩 후 예측 조합이 표시됩니다.</p>

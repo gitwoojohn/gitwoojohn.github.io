@@ -268,6 +268,31 @@ body {
     transition: transform 0.15s ease;
 }
 
+.predict-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+}
+
+.mode-toggle input {
+    accent-color: #38bdf8;
+    width: 0.9rem;
+    height: 0.9rem;
+    cursor: pointer;
+}
+
 .gen-btn:active {
     transform: scale(0.94);
 }
@@ -346,24 +371,6 @@ body {
 .ball-gray { background: #64748b; color: #fff; }
 .ball-green { background: #22c55e; color: #fff; }
 
-.predict-digits {
-    margin-top: 0.9rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    justify-content: center;
-}
-
-.predict-digits .dg {
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: #7dd3fc;
-    padding: 0.35rem 0.8rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 900;
-}
-
 .hint {
     color: #94a3b8;
     font-size: 0.8rem;
@@ -416,11 +423,5 @@ body {
 @media (max-width: 480px) {
     .grid-2 {
         grid-template-columns: 1fr;
-    }
-
-    .ball {
-        width: 1.7rem;
-        height: 1.7rem;
-        font-size: 0.72rem;
     }
 }

@@ -5,6 +5,21 @@ let lastRows = [];
 
 const $ = (id) => document.getElementById(id);
 
+function mulberry32(seed) {
+    let state = seed >>> 0;
+    return function () {
+        state = (state + 0x6d2b79f5) | 0;
+        let t = Math.imul(state ^ (state >>> 15), 1 | state);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+function isRandomMode() {
+    const toggle = $('randomModeToggle');
+    return toggle ? toggle.checked : false;
+}
+
 function showLoader(isVisible) {
     $('loader').classList.toggle('hidden', !isVisible);
 }
@@ -63,7 +78,6 @@ function render() {
     renderHotCold(sortedDigits);
     generatePredictions(frequencies);
 }
-
 function renderChart(frequencies, maxCount) {
     const chart = $('digitChart');
     chart.innerHTML = '';
@@ -132,7 +146,7 @@ function ballColorClass(number) {
     return 'ball-green';
 }
 
-function pickWeightedDigits(frequencies) {
+function pickWeightedDigits(frequencies, rng) {
     const weightedDigits = [];
     frequencies.forEach((count, digit) => {
         for (let i = 0; i < count; i++) weightedDigits.push(digit);
@@ -140,16 +154,17 @@ function pickWeightedDigits(frequencies) {
     if (!weightedDigits.length) return [];
     const pickedDigits = [];
     while (pickedDigits.length < 6) {
-        const digit = weightedDigits[Math.floor(Math.random() * weightedDigits.length)];
+        const digit = weightedDigits[Math.floor(rng() * weightedDigits.length)];
         if (!pickedDigits.includes(digit)) pickedDigits.push(digit);
     }
     return pickedDigits.sort((a, b) => a - b);
 }
 
-function randomNumberForDigit(digit) {
+function randomNumberForDigit(digit, rng) {
     const candidates = [];
-    for (let number = digit; number <= 45; number += 10) candidates.push(number);
-    return candidates[Math.floor(Math.random() * candidates.length)];
+    const start = digit === 0 ? 10 : digit;
+    for (let number = start; number <= 45; number += 10) candidates.push(number);
+    return candidates[Math.floor(rng() * candidates.length)];
 }
 
 function calcAC(numbers) {
@@ -169,17 +184,21 @@ function calcSD(numbers) {
 }
 
 function generatePredictions(frequencies) {
-    const usedNumbers = new Set();
+    const nextRoundId = lastRows.length ? lastRows[lastRows.length - 1].id + 1 : 0;
+    const seedBase = isRandomMode() ? Date.now() : nextRoundId;
+
     const predictions = [];
 
     for (let predictionIndex = 0; predictionIndex < 5; predictionIndex++) {
-        const targetDigits = pickWeightedDigits(frequencies);
+        const rng = mulberry32(seedBase * 100 + predictionIndex);
+        const usedNumbers = new Set();
+        const targetDigits = pickWeightedDigits(frequencies, rng);
         const chosenNumbers = [];
         let attempts = 0;
         while (chosenNumbers.length < 6 && attempts < 300) {
             attempts++;
             const digit = targetDigits[chosenNumbers.length];
-            const number = randomNumberForDigit(digit);
+            const number = randomNumberForDigit(digit, rng);
             if (!usedNumbers.has(number) && !chosenNumbers.includes(number)) {
                 chosenNumbers.push(number);
                 usedNumbers.add(number);
