@@ -121,7 +121,8 @@ function renderHotCold(sortedDigits) {
         .map(
             (entry) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#ef4444">${entry.digit}</span> <span class="cnt">${entry.count}회</span></span>
+                <span class="d" style="background:#ef4444">${entry.digit}</span>
+                <span class="cnt">${entry.count}회</span>
             </div>`
         )
         .join('');
@@ -132,7 +133,8 @@ function renderHotCold(sortedDigits) {
         .map(
             (entry) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#64748b">${entry.digit}</span> <span class="cnt">${entry.count}회</span></span>
+                <span class="d" style="background:#64748b">${entry.digit}</span>
+                <span class="cnt">${entry.count}회</span>
             </div>`
         )
         .join('');

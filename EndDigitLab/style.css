@@ -214,14 +214,17 @@ body {
 
 .digit-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 0.5rem;
 }
 
 .digit-item {
+    flex: 1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 0.5rem;
     background: #0f172a;
     border: 1px solid #334155;
     border-radius: 0.8rem;
