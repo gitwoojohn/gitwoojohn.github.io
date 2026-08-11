@@ -303,6 +303,21 @@ body {
     gap: 0.7rem;
 }
 
+.predict-card {
+    border-left: 4px solid #475569;
+}
+
+.predict-card.rank-1 { border-left-color: #38bdf8; }
+.predict-card.rank-2 { border-left-color: #34d399; }
+.predict-card.rank-3 { border-left-color: #fbbf24; }
+.predict-card.rank-4 { border-left-color: #f472b6; }
+.predict-card.rank-5 { border-left-color: #a78bfa; }
+
+.predict-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #475569, transparent);
+}
+
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }

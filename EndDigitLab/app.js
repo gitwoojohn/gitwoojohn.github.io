@@ -210,7 +210,7 @@ function generatePredictions(frequencies) {
     }
 
     $('predictArea').innerHTML = predictions
-        .map((numbers) => {
+        .map((numbers, predictionIndex) => {
             const totalSum = numbers.reduce((sum, number) => sum + number, 0);
             const oddCount = numbers.filter((number) => number % 2 !== 0).length;
             const acValue = calcAC(numbers);
@@ -222,7 +222,7 @@ function generatePredictions(frequencies) {
                 )
                 .join('');
             return `
-                <div class="bg-slate-900 text-white p-3 rounded-xl shadow-lg space-y-2 font-mono text-left overflow-visible">
+                <div class="predict-card rank-${predictionIndex + 1} bg-slate-900 text-white p-3 rounded-xl shadow-lg space-y-2 font-mono text-left overflow-visible">
                     <div class="flex items-center justify-between gap-2 border-b border-slate-700 pb-3">
                         <div class="flex gap-2 flex-1 justify-center overflow-x-auto overflow-y-visible py-1">
                             ${ballsHtml}
@@ -234,7 +234,8 @@ function generatePredictions(frequencies) {
                         <span>AC: <b class="text-white">${acValue}</b></span>
                         <span>SD: <b class="text-white">${sdValue}</b></span>
                     </div>
-                </div>`;
+                </div>
+                ${predictionIndex < predictions.length - 1 ? '<div class="predict-divider"></div>' : ''}`;
         })
         .join('');
 }
