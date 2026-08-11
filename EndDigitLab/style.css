@@ -340,11 +340,11 @@ body {
 
 .text-left { text-align: left; }
 
-.ball-y { background: #fbbf24; color: #1e293b; }
-.ball-b { background: #3b82f6; color: #fff; }
-.ball-r { background: #ef4444; color: #fff; }
-.ball-g { background: #64748b; color: #fff; }
-.ball-v { background: #22c55e; color: #fff; }
+.ball-yellow { background: #fbbf24; color: #1e293b; }
+.ball-blue { background: #3b82f6; color: #fff; }
+.ball-red { background: #ef4444; color: #fff; }
+.ball-gray { background: #64748b; color: #fff; }
+.ball-green { background: #22c55e; color: #fff; }
 
 .predict-digits {
     margin-top: 0.9rem;

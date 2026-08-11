@@ -5,201 +5,201 @@ let lastRows = [];
 
 const $ = (id) => document.getElementById(id);
 
-function showLoader(on) {
-    $('loader').classList.toggle('hidden', !on);
+function showLoader(isVisible) {
+    $('loader').classList.toggle('hidden', !isVisible);
 }
 
 async function loadData() {
     showLoader(true);
     try {
-        const res = await fetch(CSV_PATH);
-        if (!res.ok) throw new Error('CSV 로드 실패');
-        const text = await res.text();
-        const rows = parseCSV(text);
-        lastRows = rows.slice(-RECENT_COUNT);
+        const response = await fetch(CSV_PATH);
+        if (!response.ok) throw new Error('CSV 로드 실패');
+        const csvText = await response.text();
+        const allRows = parseCSV(csvText);
+        lastRows = allRows.slice(-RECENT_COUNT);
 
-        const first = rows[0];
-        const last = rows[rows.length - 1];
-        $('dataRange').textContent = `최근 ${RECENT_COUNT}회 (${first.id}회 ~ ${last.id}회)`;
+        const firstRow = allRows[0];
+        const lastRow = allRows[allRows.length - 1];
+        $('dataRange').textContent = `최근 ${RECENT_COUNT}회 (${firstRow.id}회 ~ ${lastRow.id}회)`;
 
         render();
-    } catch (err) {
+    } catch (error) {
         $('dataRange').textContent = '데이터 로드 실패';
-        console.error(err);
+        console.error(error);
     } finally {
         showLoader(false);
     }
 }
 
-function parseCSV(text) {
-    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+function parseCSV(csvText) {
+    const lines = csvText.split(/\r?\n/).filter((line) => line.trim());
     lines.shift();
     return lines.map((line) => {
-        const cols = line.split(',');
+        const columns = line.split(',');
         return {
-            id: parseInt(cols[0], 10),
-            nums: [2, 3, 4, 5, 6, 7].map((i) => parseInt(cols[i], 10)),
+            id: parseInt(columns[0], 10),
+            numbers: [2, 3, 4, 5, 6, 7].map((index) => parseInt(columns[index], 10)),
         };
     });
 }
 
-function digitFreq(rows) {
-    const freq = new Array(10).fill(0);
-    rows.forEach((r) => r.nums.forEach((n) => freq[n % 10]++));
-    return freq;
+function digitFrequencies(rows) {
+    const frequencies = new Array(10).fill(0);
+    rows.forEach((row) => row.numbers.forEach((number) => frequencies[number % 10]++));
+    return frequencies;
 }
 
 function render() {
-    const freq = digitFreq(lastRows);
-    const total = freq.reduce((a, b) => a + b, 0);
+    const frequencies = digitFrequencies(lastRows);
+    const total = frequencies.reduce((sum, count) => sum + count, 0);
     $('totalCount').textContent = `${total}개`;
 
-    const max = Math.max(...freq);
-    const sorted = freq
-        .map((v, d) => ({ d, v }))
-        .sort((a, b) => b.v - a.v);
+    const maxCount = Math.max(...frequencies);
+    const sortedDigits = frequencies
+        .map((count, digit) => ({ digit, count }))
+        .sort((a, b) => b.count - a.count);
 
-    renderChart(freq, max);
-    renderHotCold(sorted);
-    generatePredictions(freq);
+    renderChart(frequencies, maxCount);
+    renderHotCold(sortedDigits);
+    generatePredictions(frequencies);
 }
 
-function renderChart(freq, max) {
+function renderChart(frequencies, maxCount) {
     const chart = $('digitChart');
     chart.innerHTML = '';
-    const sorted = freq.map((v, d) => ({ d, v })).sort((a, b) => b.v - a.v);
-    const hotTop = sorted.slice(0, 3).map((x) => x.d);
-    const coldBottom = sorted.slice(-3).map((x) => x.d);
+    const sortedDigits = frequencies.map((count, digit) => ({ digit, count })).sort((a, b) => b.count - a.count);
+    const topHotDigits = sortedDigits.slice(0, 3).map((entry) => entry.digit);
+    const bottomColdDigits = sortedDigits.slice(-3).map((entry) => entry.digit);
 
-    freq.forEach((v, d) => {
-        const h = max > 0 ? (v / max) * 100 : 0;
-        const col = document.createElement('div');
-        col.className = 'digit-col';
+    frequencies.forEach((count, digit) => {
+        const heightPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
+        const column = document.createElement('div');
+        column.className = 'digit-col';
 
-        const val = document.createElement('span');
-        val.className = 'digit-val';
-        val.textContent = v;
+        const countLabel = document.createElement('span');
+        countLabel.className = 'digit-val';
+        countLabel.textContent = count;
 
-        const wrap = document.createElement('div');
-        wrap.className = 'digit-bar-wrap';
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'digit-bar-wrap';
 
         const bar = document.createElement('div');
         bar.className = 'digit-bar';
-        if (hotTop.includes(d)) bar.classList.add('hot');
-        else if (coldBottom.includes(d)) bar.classList.add('cold');
-        bar.style.height = `${h}%`;
-        wrap.appendChild(bar);
+        if (topHotDigits.includes(digit)) bar.classList.add('hot');
+        else if (bottomColdDigits.includes(digit)) bar.classList.add('cold');
+        bar.style.height = `${heightPercent}%`;
+        barWrapper.appendChild(bar);
 
-        const label = document.createElement('span');
-        label.className = 'digit-label';
-        label.textContent = d;
+        const digitLabel = document.createElement('span');
+        digitLabel.className = 'digit-label';
+        digitLabel.textContent = digit;
 
-        col.appendChild(val);
-        col.appendChild(wrap);
-        col.appendChild(label);
-        chart.appendChild(col);
+        column.appendChild(countLabel);
+        column.appendChild(barWrapper);
+        column.appendChild(digitLabel);
+        chart.appendChild(column);
     });
 }
 
-function renderHotCold(sorted) {
-    $('hotList').innerHTML = sorted
+function renderHotCold(sortedDigits) {
+    $('hotList').innerHTML = sortedDigits
         .slice(0, 3)
         .map(
-            (x) => `
+            (entry) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#ef4444">${x.d}</span> <span class="cnt">${x.v}회</span></span>
+                <span><span class="d" style="background:#ef4444">${entry.digit}</span> <span class="cnt">${entry.count}회</span></span>
             </div>`
         )
         .join('');
 
-    $('coldList').innerHTML = sorted
+    $('coldList').innerHTML = sortedDigits
         .slice(-3)
         .reverse()
         .map(
-            (x) => `
+            (entry) => `
             <div class="digit-item">
-                <span><span class="d" style="background:#64748b">${x.d}</span> <span class="cnt">${x.v}회</span></span>
+                <span><span class="d" style="background:#64748b">${entry.digit}</span> <span class="cnt">${entry.count}회</span></span>
             </div>`
         )
         .join('');
 }
 
-function ballClass(n) {
-    if (n <= 10) return 'ball-y';
-    if (n <= 20) return 'ball-b';
-    if (n <= 30) return 'ball-r';
-    if (n <= 40) return 'ball-g';
-    return 'ball-v';
+function ballColorClass(number) {
+    if (number <= 10) return 'ball-yellow';
+    if (number <= 20) return 'ball-blue';
+    if (number <= 30) return 'ball-red';
+    if (number <= 40) return 'ball-gray';
+    return 'ball-green';
 }
 
-function pickByDigit(freq) {
-    const weighted = [];
-    freq.forEach((v, d) => {
-        for (let i = 0; i < v; i++) weighted.push(d);
+function pickWeightedDigits(frequencies) {
+    const weightedDigits = [];
+    frequencies.forEach((count, digit) => {
+        for (let i = 0; i < count; i++) weightedDigits.push(digit);
     });
-    if (!weighted.length) return [];
-    const picks = [];
-    while (picks.length < 6) {
-        const d = weighted[Math.floor(Math.random() * weighted.length)];
-        if (!picks.includes(d)) picks.push(d);
+    if (!weightedDigits.length) return [];
+    const pickedDigits = [];
+    while (pickedDigits.length < 6) {
+        const digit = weightedDigits[Math.floor(Math.random() * weightedDigits.length)];
+        if (!pickedDigits.includes(digit)) pickedDigits.push(digit);
     }
-    return picks.sort((a, b) => a - b);
+    return pickedDigits.sort((a, b) => a - b);
 }
 
-function numForDigit(d) {
+function randomNumberForDigit(digit) {
     const candidates = [];
-    for (let n = d; n <= 45; n += 10) candidates.push(n);
+    for (let number = digit; number <= 45; number += 10) candidates.push(number);
     return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-function calcAC(nums) {
-    const diffs = new Set();
-    for (let i = 0; i < nums.length; i++) {
-        for (let j = i + 1; j < nums.length; j++) {
-            diffs.add(nums[j] - nums[i]);
+function calcAC(numbers) {
+    const differences = new Set();
+    for (let i = 0; i < numbers.length; i++) {
+        for (let j = i + 1; j < numbers.length; j++) {
+            differences.add(numbers[j] - numbers[i]);
         }
     }
-    return diffs.size - (nums.length - 1);
+    return differences.size - (numbers.length - 1);
 }
 
-function calcSD(nums) {
-    const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
-    const variance = nums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / nums.length;
+function calcSD(numbers) {
+    const mean = numbers.reduce((sum, number) => sum + number, 0) / numbers.length;
+    const variance = numbers.reduce((sum, number) => sum + Math.pow(number - mean, 2), 0) / numbers.length;
     return Math.sqrt(variance).toFixed(1);
 }
 
-function generatePredictions(freq) {
-    const usedNums = new Set();
-    const picks = [];
+function generatePredictions(frequencies) {
+    const usedNumbers = new Set();
+    const predictions = [];
 
-    for (let i = 0; i < 5; i++) {
-        let digits = pickByDigit(freq);
-        let nums = [];
+    for (let predictionIndex = 0; predictionIndex < 5; predictionIndex++) {
+        const targetDigits = pickWeightedDigits(frequencies);
+        const chosenNumbers = [];
         let attempts = 0;
-        while (nums.length < 6 && attempts < 300) {
+        while (chosenNumbers.length < 6 && attempts < 300) {
             attempts++;
-            const d = digits[nums.length];
-            const n = numForDigit(d);
-            if (!usedNums.has(n) && !nums.includes(n)) {
-                nums.push(n);
-                usedNums.add(n);
+            const digit = targetDigits[chosenNumbers.length];
+            const number = randomNumberForDigit(digit);
+            if (!usedNumbers.has(number) && !chosenNumbers.includes(number)) {
+                chosenNumbers.push(number);
+                usedNumbers.add(number);
             }
         }
-        if (nums.length === 6) {
-            picks.push(nums.sort((a, b) => a - b));
+        if (chosenNumbers.length === 6) {
+            predictions.push(chosenNumbers.sort((a, b) => a - b));
         }
     }
 
-    $('predictArea').innerHTML = picks
-        .map((nums, i) => {
-            const sum = nums.reduce((a, b) => a + b, 0);
-            const odd = nums.filter((n) => n % 2 !== 0).length;
-            const ac = calcAC(nums);
-            const sd = calcSD(nums);
-            const ballsHtml = nums
+    $('predictArea').innerHTML = predictions
+        .map((numbers) => {
+            const totalSum = numbers.reduce((sum, number) => sum + number, 0);
+            const oddCount = numbers.filter((number) => number % 2 !== 0).length;
+            const acValue = calcAC(numbers);
+            const sdValue = calcSD(numbers);
+            const ballsHtml = numbers
                 .map(
-                    (n) =>
-                        `<span class="w-8 h-8 shrink-0 ${ballClass(n)} rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">${n}</span>`
+                    (number) =>
+                        `<span class="w-8 h-8 shrink-0 ${ballColorClass(number)} rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">${number}</span>`
                 )
                 .join('');
             return `
@@ -210,10 +210,10 @@ function generatePredictions(freq) {
                         </div>
                     </div>
                     <div class="flex justify-between text-[11px] pt-1 text-slate-300">
-                        <span>합계: <b class="text-white">${sum}</b></span>
-                        <span>홀짝: <b class="text-white">${odd}:${6 - odd}</b></span>
-                        <span>AC: <b class="text-white">${ac}</b></span>
-                        <span>SD: <b class="text-white">${sd}</b></span>
+                        <span>합계: <b class="text-white">${totalSum}</b></span>
+                        <span>홀짝: <b class="text-white">${oddCount}:${6 - oddCount}</b></span>
+                        <span>AC: <b class="text-white">${acValue}</b></span>
+                        <span>SD: <b class="text-white">${sdValue}</b></span>
                     </div>
                 </div>`;
         })
@@ -221,7 +221,7 @@ function generatePredictions(freq) {
 }
 
 $('btnGenerate').addEventListener('click', () => {
-    if (lastRows.length) generatePredictions(digitFreq(lastRows));
+    if (lastRows.length) generatePredictions(digitFrequencies(lastRows));
 });
 $('btnReload').addEventListener('click', loadData);
 
