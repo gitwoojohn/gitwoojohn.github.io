@@ -1,2 +1,6 @@
 worktrees/
 .vscode/
+
+lotto_dummy/__pycache__/
+
+lotto_dummy/**/__pycache__/

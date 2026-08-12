@@ -1,0 +1,9 @@
+COLOR_SIX = "00C0FF"
+COLOR_BONUS = "FFBB00"
+
+SHEET_DATA = "당첨번호데이터"
+SHEET_RATIO = "당첨 비율"
+SHEET_GROUP = "그룹 당첨 개수"
+
+GROUP_SIZE = 15
+NUMBER_COUNT = 45
