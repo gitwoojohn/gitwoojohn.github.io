@@ -4,3 +4,7 @@ worktrees/
 lotto_dummy/__pycache__/
 
 lotto_dummy/**/__pycache__/
+
+*.xlsx
+*.xlsm
+*.7z
