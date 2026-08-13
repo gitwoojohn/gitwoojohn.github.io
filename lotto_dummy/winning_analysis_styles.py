@@ -1,3 +1,36 @@
+import os
+
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QGuiApplication, QPainter, QPainterPath, QPixmap
+
+_ARROW_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
+UP_ARROW_PATH = os.path.join(_ARROW_DIR, "up_arrow.png")
+DOWN_ARROW_PATH = os.path.join(_ARROW_DIR, "down_arrow.png")
+
+
+def _make_arrow(path, points):
+    pm = QPixmap(18, 13)
+    pm.fill(Qt.transparent)
+    p = QPainter(pm)
+    p.setRenderHint(QPainter.Antialiasing)
+    p.setPen(Qt.NoPen)
+    p.setBrush(Qt.white)
+    path_ = QPainterPath()
+    path_.moveTo(*points[0])
+    for x, y in points[1:]:
+        path_.lineTo(x, y)
+    path_.closeSubpath()
+    p.drawPath(path_)
+    p.end()
+    pm.save(path)
+
+
+def build_arrows():
+    os.makedirs(_ARROW_DIR, exist_ok=True)
+    _make_arrow(UP_ARROW_PATH, [(4, 9), (9, 4), (14, 9)])
+    _make_arrow(DOWN_ARROW_PATH, [(4, 4), (9, 9), (14, 4)])
+
+
 DARK_QSS = """
 QMainWindow, QWidget {
     background-color: #1e1e1e;
@@ -92,20 +125,6 @@ QSpinBox::down-button {
 }
 QSpinBox::up-button:hover, QSpinBox::down-button:hover {
     background: #536dfe;
-}
-QSpinBox::up-arrow {
-    width: 8px;
-    height: 5px;
-    border-top: 2px solid #e0e0e0;
-    border-left: 2px solid #e0e0e0;
-    transform: rotate(45deg);
-}
-QSpinBox::down-arrow {
-    width: 8px;
-    height: 5px;
-    border-bottom: 2px solid #e0e0e0;
-    border-left: 2px solid #e0e0e0;
-    transform: rotate(-45deg);
 }
 QProgressBar {
     border: 1px solid #3a3a3a;
@@ -221,3 +240,15 @@ QLabel#statG1, QLabel#statG2, QLabel#statG3 {
     color: #b088ff;
 }
 """
+
+
+def build_qss():
+    up = UP_ARROW_PATH.replace("\\", "/")
+    down = DOWN_ARROW_PATH.replace("\\", "/")
+    return DARK_QSS.replace(
+        "QSpinBox::up-button:hover, QSpinBox::down-button:hover {\n    background: #536dfe;\n}",
+        "QSpinBox::up-button:hover, QSpinBox::down-button:hover {\n    background: #536dfe;\n}\n"
+        "QSpinBox::up-arrow {\n    image: url(%s);\n}\n"
+        "QSpinBox::down-arrow {\n    image: url(%s);\n}"
+        % (up, down),
+    )

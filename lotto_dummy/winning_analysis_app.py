@@ -2,13 +2,14 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from winning_analysis_styles import DARK_QSS
+from winning_analysis_styles import build_arrows, build_qss
 from winning_analysis_main_window import MainWindow
 
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyleSheet(DARK_QSS)
+    build_arrows()
+    app.setStyleSheet(build_qss())
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
