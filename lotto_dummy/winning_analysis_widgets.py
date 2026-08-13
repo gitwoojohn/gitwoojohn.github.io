@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QProgressBar, QPushButton, QFrame,
+    QSizePolicy,
 )
 
 
@@ -22,11 +23,11 @@ class LoadingPage(QWidget):
 
 
 class LoadButtonPage(QWidget):
-    def __init__(self, text, on_load, parent=None):
+    def __init__(self, text, on_load, parent=None, message=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignCenter)
-        self.label = QLabel("버튼을 눌러 데이터를 불러오세요", self)
+        self.label = QLabel(message or "버튼을 눌러 데이터를 불러오세요", self)
         self.label.setObjectName("loading")
         self.label.setAlignment(Qt.AlignCenter)
         self.button = QPushButton(text, self)
@@ -41,6 +42,7 @@ class StatCard(QFrame):
     def __init__(self, label_text, parent=None):
         super().__init__(parent)
         self.setObjectName("statsBox")
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
         v = QVBoxLayout(self)
         v.setContentsMargins(10, 6, 10, 6)
         v.setSpacing(2)
@@ -50,6 +52,7 @@ class StatCard(QFrame):
         self.value = QLabel("0", self)
         self.value.setObjectName("statsValue")
         self.value.setAlignment(Qt.AlignCenter)
+        self.value.setMinimumHeight(32)
         v.addWidget(self.label)
         v.addWidget(self.value)
 
