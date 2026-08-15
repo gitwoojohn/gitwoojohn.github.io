@@ -183,7 +183,7 @@ QLabel#winNums {
     border: 1px solid #2f5f7a;
     border-radius: 6px;
     padding: 0px 8px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     color: #00c0ff;
 }
@@ -192,7 +192,7 @@ QLabel#bonusNums {
     border: 1px solid #7a6a2f;
     border-radius: 6px;
     padding: 0px 8px;
-    font-size: 14px;
+    font-size: 12px;
     color: #ffbb00;
 }
 QLabel#statTotal {

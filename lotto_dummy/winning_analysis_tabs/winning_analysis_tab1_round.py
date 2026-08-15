@@ -1,27 +1,50 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QSlider, QSpinBox,
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame,
+    QSlider, QSpinBox, QScrollArea, QSizePolicy,
 )
 
 from winning_analysis_widgets import StatCard
 from winning_analysis_loader import compute_stats
 
 
+class RoundSpinBox(QSpinBox):
+    def __init__(self, round_ids, parent=None):
+        super().__init__(parent)
+        self._ids = round_ids
+        self.setRange(1, len(round_ids))
+        self.setValue(1)
+
+    def textFromValue(self, value):
+        return str(self._ids[value - 1])
+
+    def valueFromText(self, text):
+        try:
+            v = int(text)
+            if v in self._ids:
+                return self._ids.index(v) + 1
+            nearest = min(self._ids, key=lambda r: abs(r - v))
+            return self._ids.index(nearest) + 1
+        except ValueError:
+            return self.value()
+
+
 class RoundTab(QWidget):
+    round_changed = Signal(int)
+
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self.data = data
         self.rounds = data["rounds"]
         self.round_ids = data.get("round_ids", list(range(1, self.rounds + 1)))
+        self.current_round_id = self.round_ids[0] if self.round_ids else 0
         layout = QVBoxLayout(self)
 
         top = QHBoxLayout()
         top.addWidget(QLabel("회차:"))
-        self.spinBox = QSpinBox(self)
-        self.spinBox.setRange(1, self.rounds)
-        self.spinBox.setValue(1)
+        self.spinBox = RoundSpinBox(self.round_ids, self)
         top.addWidget(self.spinBox)
-        self.roundLabel = QLabel(f"/ {self.rounds}회차", self)
+        self.roundLabel = QLabel(f"/ {max(self.round_ids)}회차", self)
         top.addWidget(self.roundLabel)
         self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(1, self.rounds)
@@ -29,11 +52,17 @@ class RoundTab(QWidget):
         top.addWidget(self.slider, 1)
         layout.addLayout(top)
 
-        self.groupRow = QHBoxLayout()
-        self.groupRow.setSpacing(0)
+        self.scroll = QScrollArea(self)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        container = QWidget(self.scroll)
+        self.groupRow = QHBoxLayout(container)
+        self.groupRow.setSpacing(6)
+        self.groupRow.setContentsMargins(20, 10, 20, 10)
         self.groupRow.setAlignment(Qt.AlignTop)
-        layout.addLayout(self.groupRow)
-        layout.addStretch(1)
+        self.scroll.setWidget(container)
+        layout.addWidget(self.scroll, 1)
 
         self.spinBox.valueChanged.connect(self.slider.setValue)
         self.slider.valueChanged.connect(self.spinBox.setValue)
@@ -50,79 +79,111 @@ class RoundTab(QWidget):
             elif item.layout():
                 self._clear_layout(item.layout())
 
-    def _build_groups(self, numbers, win, bonus):
-        self._clear_layout(self.groupRow)
+    def _vline(self):
+        separator = QFrame(self)
+        separator.setFrameShape(QFrame.VLine)
+        separator.setFrameShadow(QFrame.Sunken)
+        separator.setStyleSheet("color: #3a3a3a; background: #3a3a3a;")
+        separator.setFixedWidth(2)
+        return separator
 
+    def _build_groups(self, numbers, win, bonus, target):
         for g in range(3):
-            if g > 0:
-                separator = QFrame(self)
-                separator.setFrameShape(QFrame.VLine)
-                separator.setFrameShadow(QFrame.Sunken)
-                separator.setStyleSheet("color: #3a3a3a; background: #3a3a3a;")
-                separator.setFixedWidth(2)
-                self.groupRow.addWidget(separator)
-
             group_widget = QWidget(self)
             group_layout = QVBoxLayout(group_widget)
             group_layout.setContentsMargins(8, 4, 8, 4)
             group_layout.setSpacing(6)
             title = QLabel(f"그룹 {g+1}", group_widget)
             title.setAlignment(Qt.AlignCenter)
+            title.setMaximumHeight(20)
             title.setStyleSheet(
-                "font-size: 12px; font-weight: 600; color: #9fc0e8;"
+                "font-size: 11px; font-weight: 600; color: #9fc0e8;"
                 "background: transparent; border: 1px solid #3a5a7a;"
-                "border-radius: 4px; padding: 1px 3px;"
+                "border-radius: 4px; padding: 0px 3px;"
             )
             group_layout.addWidget(title)
             grid = QGridLayout()
-            grid.setSpacing(3)
+            grid.setSpacing(2)
             for i in range(15):
                 num = numbers[g * 15 + i]
                 label = QLabel(str(num), group_widget)
                 label.setObjectName("numLabel")
                 label.setAlignment(Qt.AlignCenter)
-                label.setMinimumSize(40, 28)
-                label.setMaximumSize(44, 32)
+                label.setMinimumSize(32, 20)
+                label.setMaximumSize(36, 36)
                 if num in win:
                     label.setObjectName("numWin")
                 elif num in bonus:
                     label.setObjectName("numBonus")
                 grid.addWidget(label, i, 0)
-            group_layout.addLayout(grid)
-            self.groupRow.addWidget(group_widget)
+                grid.setRowStretch(i, 1)
+            group_layout.addLayout(grid, 1)
+            target.addWidget(group_widget)
 
-    def _build_stats(self, numbers, win, bonus):
+    def _build_stats(self, numbers, win, bonus, target, round_id):
         win_str = ", ".join(str(n) for n in sorted(win))
         bonus_str = ", ".join(str(n) for n in sorted(bonus))
         stats = compute_stats(numbers, win, bonus)
 
-        specs = [
-            ("당첨 번호", win_str, "winNums"),
+        column_specs = [
+            (f"당첨 번호 ({round_id}회차)", win_str, "winNums"),
             ("보너스 번호", bonus_str, "bonusNums"),
             ("합계", stats["total"], "statTotal"),
             ("AC", stats["ac"], "statAc"),
             ("SD", f"{stats['sd']:.1f}", "statSd"),
             ("홀 : 짝", f"{stats['odd']} : {stats['even']}", "statOdd"),
-            ("그룹1", stats["group_counts"][0], "statG1"),
-            ("그룹2", stats["group_counts"][1], "statG2"),
-            ("그룹3", stats["group_counts"][2], "statG3"),
+            ("그룹 출현", " : ".join(str(c) for c in stats["group_counts"]), "statG1"),
         ]
-        self.statsRow = QHBoxLayout()
-        self.statsRow.setSpacing(6)
-        self.statsRow.setAlignment(Qt.AlignTop)
-        for name, value, obj in specs:
+
+        statsColumn = QVBoxLayout()
+        statsColumn.setSpacing(6)
+        statsColumn.setAlignment(Qt.AlignTop)
+        for name, value, obj in column_specs:
             card = StatCard(name, self)
+            card.setFixedWidth(180)
             card.set_value(value, obj)
-            self.statsRow.addWidget(card, 0, Qt.AlignTop)
-        self.statsRow.addStretch(1)
-        self.groupRow.addLayout(self.statsRow)
+            statsColumn.addWidget(card, 0, Qt.AlignLeft)
+        target.addLayout(statsColumn)
+
+    def _next_round(self, round_id):
+        try:
+            idx = self.round_ids.index(round_id)
+        except ValueError:
+            return None
+        if idx + 1 < len(self.round_ids):
+            return self.round_ids[idx + 1]
+        return None
+
+    def _build_section(self, round_id):
+        widget = QWidget(self)
+        widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        v = QVBoxLayout(widget)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(6)
+        row = QHBoxLayout()
+        row.setSpacing(6)
+        row.setAlignment(Qt.AlignTop)
+        v.addLayout(row)
+        numbers = self.data["numbers"][round_id]
+        win = self.data["win"][round_id]
+        bonus = self.data["bonus"][round_id]
+        self._build_groups(numbers, win, bonus, row)
+        self._build_stats(numbers, win, bonus, row, round_id)
+        return widget
 
     def refresh(self):
         idx = self.spinBox.value()
         round_id = self.round_ids[idx - 1]
+        self.current_round_id = round_id
         self.roundLabel.setText(f"/ {round_id}회차")
-        numbers = self.data["numbers"][round_id]
-        win = self.data["win"][round_id]
-        bonus = self.data["bonus"][round_id]
-        self._build_groups(numbers, win, bonus)
-        self._build_stats(numbers, win, bonus)
+        self._clear_layout(self.groupRow)
+        self.groupRow.addStretch(1)
+
+        self.groupRow.addWidget(self._build_section(round_id))
+
+        next_rid = self._next_round(round_id)
+        if next_rid is not None:
+            self.groupRow.addWidget(self._vline())
+            self.groupRow.addWidget(self._build_section(next_rid))
+        self.groupRow.addStretch(1)
+        self.round_changed.emit(round_id)

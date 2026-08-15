@@ -9,12 +9,15 @@ from winning_analysis_loader import DataLoader, SheetLister
 from winning_analysis_widgets import LoadButtonPage
 from winning_analysis_tabs import RoundTab, RatioTab, GroupTab
 
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Lotto645 분석 - lotto_dummy")
-        self.resize(1000, 720)
+        self.setWindowTitle("로또645 회차 분석")
+        self.resize(960, 640)
+        self.setMinimumSize(900, 580)
 
         central = QWidget(self)
         main_layout = QVBoxLayout(central)
@@ -63,14 +66,15 @@ class MainWindow(QMainWindow):
         self.data = None
         self.loader = None
         self.sheet_lister = None
-        self.filepath = os.getcwd()
+        self.round_tab = None
+        self.ratio_tab = None
+        self.filepath = APP_DIR
         self.tabWidget.setCurrentIndex(0)
         self.fileLabel.setText("파일: 선택 안 됨")
 
     def on_open_clicked(self):
-        start_dir = self.filepath if os.path.isfile(self.filepath) else os.getcwd()
         path, _ = QFileDialog.getOpenFileName(
-            self, "엑셀 파일 선택", start_dir, "Excel Files (*.xlsx *.xlsm)"
+            self, "엑셀 파일 선택", APP_DIR, "Excel Files (*.xlsx *.xlsm)"
         )
         if path:
             self.list_sheets(path)
@@ -83,6 +87,8 @@ class MainWindow(QMainWindow):
         self.filepath = filepath
         self.data = None
         self.tabs_loaded = set()
+        self.round_tab = None
+        self.ratio_tab = None
         self.fileLabel.setText(f"파일: {os.path.basename(filepath)}")
         self.sheetCombo.blockSignals(True)
         self.sheetCombo.clear()
@@ -143,14 +149,26 @@ class MainWindow(QMainWindow):
     def load_round_tab(self):
         if self.data is None:
             return
-        self._replace_tab(0, RoundTab(self.data), "회차 조회")
+        if 0 not in self.tabs_loaded:
+            self.round_tab = RoundTab(self.data)
+            self.round_tab.round_changed.connect(self.on_round_changed)
+            self._replace_tab(0, self.round_tab, "회차 조회")
         self.tabWidget.setCurrentIndex(0)
 
     def load_ratio_tab(self):
         if self.data is None:
             return
-        self._replace_tab(1, RatioTab(self.data), "당첨 비율")
+        if 1 not in self.tabs_loaded:
+            round_id = None
+            if self.round_tab is not None:
+                round_id = self.round_tab.current_round_id
+            self.ratio_tab = RatioTab(self.data, round_id=round_id)
+            self._replace_tab(1, self.ratio_tab, "당첨 비율")
         self.tabWidget.setCurrentIndex(1)
+
+    def on_round_changed(self, round_id):
+        if self.ratio_tab is not None and 1 in self.tabs_loaded:
+            self.ratio_tab.update_for_round(round_id)
 
     def load_group_tab(self):
         if self.data is None:

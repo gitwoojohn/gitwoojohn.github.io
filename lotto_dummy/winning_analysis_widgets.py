@@ -42,7 +42,7 @@ class StatCard(QFrame):
     def __init__(self, label_text, parent=None):
         super().__init__(parent)
         self.setObjectName("statsBox")
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         v = QVBoxLayout(self)
         v.setContentsMargins(10, 6, 10, 6)
         v.setSpacing(2)
@@ -52,7 +52,7 @@ class StatCard(QFrame):
         self.value = QLabel("0", self)
         self.value.setObjectName("statsValue")
         self.value.setAlignment(Qt.AlignCenter)
-        self.value.setMinimumHeight(32)
+        self.value.setMinimumHeight(28)
         v.addWidget(self.label)
         v.addWidget(self.value)
 

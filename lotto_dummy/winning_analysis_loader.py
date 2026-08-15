@@ -33,11 +33,12 @@ def compute_stats(numbers, win, bonus):
     odd = sum(1 for n in win_sorted if n % 2 == 1)
     even = len(win_sorted) - odd
     marked = win | bonus
-    group_counts = [
-        sum(1 for i in range(0, 15) if numbers[i] in marked),
-        sum(1 for i in range(15, 30) if numbers[i] in marked),
-        sum(1 for i in range(30, 45) if numbers[i] in marked),
-    ]
+    group_counts = [0, 0, 0]
+    for idx, n in enumerate(numbers):
+        if n in marked:
+            g = idx // 15
+            if 0 <= g < 3:
+                group_counts[g] += 1
     return {
         "total": total,
         "ac": ac,
@@ -149,20 +150,26 @@ class DataLoader(QThread):
                 win_by_round[round_id] = win
                 bonus_by_round[round_id] = bonus
 
-            ratio = {}
-            if "당첨 비율" in wb.sheetnames:
-                wsr = wb["당첨 비율"]
-                for row in wsr.iter_rows(min_row=2, max_col=3):
-                    num, cnt, pct = row
-                    ratio[num.value] = (cnt.value, pct.value)
+            ratio = {n: (0, "0.00%") for n in range(1, 46)}
+            for round_id in round_ids:
+                for n in win_by_round[round_id]:
+                    if n is None:
+                        continue
+                    cnt, _ = ratio[n]
+                    ratio[n] = (cnt + 1, f"{(cnt + 1) / rounds:.2%}")
 
             group = []
-            headers = []
-            if "그룹 당첨 개수" in wb.sheetnames:
-                wsg = wb["그룹 당첨 개수"]
-                headers = [c.value for c in next(wsg.iter_rows(min_row=1, max_row=1))]
-                for row in wsg.iter_rows(min_row=2):
-                    group.append([c.value for c in row])
+            headers = ["회차", "그룹1(1-15)", "그룹2(16-30)", "그룹3(31-45)"]
+            for round_id in round_ids:
+                marked = win_by_round[round_id] | bonus_by_round[round_id]
+                counts = [0, 0, 0]
+                for n in marked:
+                    if n is None:
+                        continue
+                    g = (n - 1) // 15
+                    if 0 <= g < 3:
+                        counts[g] += 1
+                group.append([round_id] + counts)
         except Exception as e:
             self.failed.emit(f"데이터를 분석하는 중 오류가 발생했습니다: {e}")
             return
