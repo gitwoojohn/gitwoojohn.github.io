@@ -182,8 +182,8 @@ QLabel#winNums {
     background: #1a2a33;
     border: 1px solid #2f5f7a;
     border-radius: 6px;
-    padding: 0px 8px;
-    font-size: 12px;
+    padding: 0px 2px;
+    font-size: 13px;
     font-weight: bold;
     color: #00c0ff;
 }

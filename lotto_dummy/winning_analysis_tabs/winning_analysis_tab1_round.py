@@ -59,7 +59,7 @@ class RoundTab(QWidget):
         container = QWidget(self.scroll)
         self.groupRow = QHBoxLayout(container)
         self.groupRow.setSpacing(6)
-        self.groupRow.setContentsMargins(20, 10, 20, 10)
+        self.groupRow.setContentsMargins(6, 10, 6, 10)
         self.groupRow.setAlignment(Qt.AlignTop)
         self.scroll.setWidget(container)
         layout.addWidget(self.scroll, 1)

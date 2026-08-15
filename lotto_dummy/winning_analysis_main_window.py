@@ -1,5 +1,6 @@
 import os
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QTabWidget, QHBoxLayout, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QFileDialog, QMessageBox,
@@ -16,8 +17,9 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("로또645 회차 분석")
-        self.resize(960, 640)
+        self.resize(900, 640)
         self.setMinimumSize(900, 580)
+        self.setMaximumWidth(940)
 
         central = QWidget(self)
         main_layout = QVBoxLayout(central)
@@ -25,11 +27,11 @@ class MainWindow(QMainWindow):
         main_layout.setSpacing(6)
 
         top = QHBoxLayout()
-        self.openButton = QPushButton("엑셀 열기", central)
+        self.openButton = QPushButton("파일 불러오기", central)
         self.openButton.clicked.connect(self.on_open_clicked)
         self.fileLabel = QLabel("파일: -", central)
         self.fileLabel.setObjectName("fileInfo")
-        self.sheetLabel = QLabel("시트:", central)
+        self.sheetLabel = QLabel("시트 이름:", central)
         self.sheetLabel.setObjectName("fileInfo")
         self.sheetCombo = QComboBox(central)
         self.sheetCombo.setMinimumWidth(220)
@@ -50,10 +52,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.tabWidget, 1)
         self.setCentralWidget(central)
 
-        self.page_round = LoadButtonPage(
-            "엑셀 파일 열기", self.on_open_clicked,
-            message="분석할 엑셀 파일을 선택하세요",
-        )
+        self.page_round = self._make_message_page("분석할 엑셀 파일을 선택하세요")
         self.page_ratio = LoadButtonPage("당첨 비율 불러오기", self.load_ratio_tab)
         self.page_group = LoadButtonPage("그룹 통계 불러오기", self.load_group_tab)
 
@@ -71,6 +70,16 @@ class MainWindow(QMainWindow):
         self.filepath = APP_DIR
         self.tabWidget.setCurrentIndex(0)
         self.fileLabel.setText("파일: 선택 안 됨")
+
+    def _make_message_page(self, message):
+        page = QWidget(self)
+        layout = QVBoxLayout(page)
+        layout.setAlignment(Qt.AlignCenter)
+        label = QLabel(message, page)
+        label.setObjectName("loading")
+        label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(label)
+        return page
 
     def on_open_clicked(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -94,7 +103,7 @@ class MainWindow(QMainWindow):
         self.sheetCombo.clear()
         self.sheetCombo.blockSignals(False)
         self.sheetCombo.setEnabled(False)
-        self.sheetLabel.setText("시트: -")
+        self.sheetLabel.setText("시트 이름: -")
         self.sheet_lister = SheetLister(filepath)
         self.sheet_lister.listed.connect(self.on_sheets_listed)
         self.sheet_lister.failed.connect(self.on_load_failed)
@@ -107,7 +116,7 @@ class MainWindow(QMainWindow):
         self.sheetCombo.setCurrentIndex(-1)
         self.sheetCombo.blockSignals(False)
         self.sheetCombo.setEnabled(True)
-        self.sheetLabel.setText("시트:")
+        self.sheetLabel.setText("시트 이름:")
 
     def on_load_failed(self, message):
         QMessageBox.warning(self, "로드 실패", message)

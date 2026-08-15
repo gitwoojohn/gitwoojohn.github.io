@@ -77,28 +77,43 @@ class DataLoader(QThread):
         self.sheet_name = sheet_name
 
     @staticmethod
-    def _round_columns(ws):
+    def _read_sheet(ws):
+        headers = []
+        rows = []
+        for r, row in enumerate(ws.iter_rows()):
+            if r == 0:
+                headers = [c.value for c in row]
+            else:
+                rows.append([(c.value, cell_fill_rgb(c)[-6:]) for c in row])
+        return headers, rows
+
+    @staticmethod
+    def _round_columns(headers, rows):
         cols = []
-        for c in range(1, ws.max_column + 1):
-            header = ws.cell(row=1, column=c).value
+        for c, header in enumerate(headers):
             if isinstance(header, (int, float)) and not isinstance(header, bool):
-                nums = [ws.cell(row=r, column=c).value for r in range(2, ws.max_row + 1)]
-                cnt = sum(1 for v in nums if isinstance(v, (int, float)))
+                cnt = sum(
+                    1 for row in rows
+                    if c < len(row) and isinstance(row[c][0], (int, float))
+                )
                 if cnt >= 40:
                     cols.append((c, int(header)))
         return cols
 
     @classmethod
     def _is_data_sheet(cls, ws):
-        return len(cls._round_columns(ws)) > 0
+        headers, rows = cls._read_sheet(ws)
+        return len(cls._round_columns(headers, rows)) > 0, headers, rows
 
-    @classmethod
-    def _detect_colors(cls, ws, cols):
+    @staticmethod
+    def _detect_colors(cols, rows):
         from collections import Counter
         counter = Counter()
-        for col_idx, _ in cols:
-            for r in range(2, ws.max_row + 1):
-                fill = cell_fill_rgb(ws.cell(row=r, column=col_idx))[-6:]
+        for c, _ in cols:
+            for row in rows:
+                if c >= len(row):
+                    continue
+                fill = row[c][1]
                 if fill and fill != "000000":
                     counter[fill] += 1
         top = counter.most_common(2)
@@ -108,40 +123,48 @@ class DataLoader(QThread):
 
     def run(self):
         try:
-            wb = load_workbook(self.filepath, data_only=True)
+            wb = load_workbook(self.filepath, data_only=True, read_only=True)
         except Exception as e:
             self.failed.emit(f"파일을 읽을 수 없습니다: {e}")
             return
         try:
-            sheets = [s for s in wb.sheetnames if self._is_data_sheet(wb[s])]
-            if not sheets:
-                sheets = wb.sheetnames
-            if self.sheet_name in sheets:
-                ws = wb[self.sheet_name]
+            grids = {}
+            data_sheets = []
+            for sn in wb.sheetnames:
+                is_data, headers, rows = self._is_data_sheet(wb[sn])
+                grids[sn] = (headers, rows)
+                if is_data:
+                    data_sheets.append(sn)
+            if not data_sheets:
+                data_sheets = wb.sheetnames
+            if self.sheet_name in data_sheets:
+                target = self.sheet_name
             else:
-                ws = wb[sheets[0]]
+                target = data_sheets[0]
+            headers, rows = grids[target]
+            wb.close()
 
-            cols = self._round_columns(ws)
+            cols = self._round_columns(headers, rows)
             if not cols:
                 raise ValueError("회차 열을 찾을 수 없습니다 (첫 행에 회차 번호 필요)")
             round_ids = [r for _, r in cols]
             rounds = len(round_ids)
-            win_color, bonus_color = self._detect_colors(ws, cols)
+            win_color, bonus_color = self._detect_colors(cols, rows)
 
             numbers_by_round = {}
             win_by_round = {}
             bonus_by_round = {}
             for col_idx, round_id in cols:
-                numbers = [
-                    ws.cell(row=r, column=col_idx).value
-                    for r in range(2, ws.max_row + 1)
-                    if ws.cell(row=r, column=col_idx).value is not None
-                ]
+                numbers = []
                 win = set()
                 bonus = set()
-                for r in range(2, ws.max_row + 1):
-                    fill = cell_fill_rgb(ws.cell(row=r, column=col_idx))[-6:]
-                    v = ws.cell(row=r, column=col_idx).value
+                for row in rows:
+                    if col_idx >= len(row):
+                        continue
+                    v, fill = row[col_idx]
+                    if v is None:
+                        continue
+                    numbers.append(v)
                     if fill == win_color:
                         win.add(v)
                     elif fill == bonus_color:
@@ -159,7 +182,7 @@ class DataLoader(QThread):
                     ratio[n] = (cnt + 1, f"{(cnt + 1) / rounds:.2%}")
 
             group = []
-            headers = ["회차", "그룹1(1-15)", "그룹2(16-30)", "그룹3(31-45)"]
+            group_headers = ["회차", "그룹1(1-15)", "그룹2(16-30)", "그룹3(31-45)"]
             for round_id in round_ids:
                 marked = win_by_round[round_id] | bonus_by_round[round_id]
                 counts = [0, 0, 0]
@@ -181,8 +204,8 @@ class DataLoader(QThread):
             "win": win_by_round,
             "bonus": bonus_by_round,
             "ratio": ratio,
-            "group_headers": headers,
+            "group_headers": group_headers,
             "group": group,
-            "sheets": sheets,
-            "sheet_name": ws.title,
+            "sheets": data_sheets,
+            "sheet_name": target,
         })
