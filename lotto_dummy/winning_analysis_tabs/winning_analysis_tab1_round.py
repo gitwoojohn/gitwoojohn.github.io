@@ -137,6 +137,7 @@ class RoundTab(QWidget):
 
         statsColumn = QVBoxLayout()
         statsColumn.setSpacing(6)
+        statsColumn.setContentsMargins(0, 0, 16, 0)
         statsColumn.setAlignment(Qt.AlignTop)
         for name, value, obj in column_specs:
             card = StatCard(name, self)
