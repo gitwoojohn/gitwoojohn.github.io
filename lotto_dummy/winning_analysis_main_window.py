@@ -8,7 +8,9 @@ from PySide6.QtWidgets import (
 
 from winning_analysis_loader import DataLoader, SheetLister
 from winning_analysis_widgets import LoadButtonPage
-from winning_analysis_tabs import RoundTab, RatioTab, GroupTab
+from winning_analysis_tabs import (
+    RoundTab, RatioTab, GroupTab, GroupFocusTab, PreFocusTab, GapTab,
+)
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,10 +57,16 @@ class MainWindow(QMainWindow):
         self.page_round = self._make_message_page("분석할 엑셀 파일을 선택하세요")
         self.page_ratio = LoadButtonPage("당첨 비율 불러오기", self.load_ratio_tab)
         self.page_group = LoadButtonPage("그룹 통계 불러오기", self.load_group_tab)
+        self.page_group_focus = LoadButtonPage("그룹 집중 회차 불러오기", self.load_group_focus_tab)
+        self.page_pre_focus = LoadButtonPage("직전 회차 분석 불러오기", self.load_pre_focus_tab)
+        self.page_gap = LoadButtonPage("그룹 간격 분석 불러오기", self.load_gap_tab)
 
         self.tabWidget.addTab(self.page_round, "회차 조회")
         self.tabWidget.addTab(self.page_ratio, "당첨 비율")
         self.tabWidget.addTab(self.page_group, "그룹 통계")
+        self.tabWidget.addTab(self.page_group_focus, "그룹 집중 회차")
+        self.tabWidget.addTab(self.page_pre_focus, "직전 회차 분석")
+        self.tabWidget.addTab(self.page_gap, "그룹 간격 분석")
 
         self.tabWidget.currentChanged.connect(self.on_tab_changed)
 
@@ -68,6 +76,9 @@ class MainWindow(QMainWindow):
         self.round_tab = None
         self.ratio_tab = None
         self.group_tab = None
+        self.group_focus_tab = None
+        self.pre_focus_tab = None
+        self.gap_tab = None
         self.filepath = APP_DIR
         self.tabWidget.setCurrentIndex(0)
         self.fileLabel.setText("파일: 선택 안 됨")
@@ -100,6 +111,9 @@ class MainWindow(QMainWindow):
         self.round_tab = None
         self.ratio_tab = None
         self.group_tab = None
+        self.group_focus_tab = None
+        self.pre_focus_tab = None
+        self.gap_tab = None
         self.fileLabel.setText(f"파일: {os.path.basename(filepath)}")
         self.sheetCombo.blockSignals(True)
         self.sheetCombo.clear()
@@ -148,10 +162,16 @@ class MainWindow(QMainWindow):
         self.round_tab = None
         self.ratio_tab = None
         self.group_tab = None
+        self.group_focus_tab = None
+        self.pre_focus_tab = None
+        self.gap_tab = None
         pages = [
             (0, self.page_round, "회차 조회"),
             (1, self.page_ratio, "당첨 비율"),
             (2, self.page_group, "그룹 통계"),
+            (3, self.page_group_focus, "그룹 집중 회차"),
+            (4, self.page_pre_focus, "직전 회차 분석"),
+            (5, self.page_gap, "그룹 간격 분석"),
         ]
         self.tabWidget.blockSignals(True)
         for idx, page, title in pages:
@@ -211,6 +231,30 @@ class MainWindow(QMainWindow):
             self.group_tab = GroupTab(self.data, round_id=round_id)
             self._replace_tab(2, self.group_tab, "그룹 통계")
         self.tabWidget.setCurrentIndex(2)
+
+    def load_group_focus_tab(self):
+        if self.data is None:
+            return
+        if 3 not in self.tabs_loaded:
+            self.group_focus_tab = GroupFocusTab(self.data)
+            self._replace_tab(3, self.group_focus_tab, "그룹 집중 회차")
+        self.tabWidget.setCurrentIndex(3)
+
+    def load_pre_focus_tab(self):
+        if self.data is None:
+            return
+        if 4 not in self.tabs_loaded:
+            self.pre_focus_tab = PreFocusTab(self.data)
+            self._replace_tab(4, self.pre_focus_tab, "직전 회차 분석")
+        self.tabWidget.setCurrentIndex(4)
+
+    def load_gap_tab(self):
+        if self.data is None:
+            return
+        if 5 not in self.tabs_loaded:
+            self.gap_tab = GapTab(self.data)
+            self._replace_tab(5, self.gap_tab, "그룹 간격 분석")
+        self.tabWidget.setCurrentIndex(5)
 
     def on_tab_changed(self, index):
         if index == 0 and self.data is not None:
