@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame,
-    QSlider, QSpinBox, QScrollArea, QSizePolicy,
+    QSlider, QSpinBox, QScrollArea, QSizePolicy, QPushButton, QApplication,
 )
 
 from winning_analysis_widgets import StatCard
@@ -50,6 +50,10 @@ class RoundTab(QWidget):
         self.slider.setRange(1, self.rounds)
         self.slider.setValue(1)
         top.addWidget(self.slider, 1)
+        self.copyButton = QPushButton("복사", self)
+        self.copyButton.setFixedWidth(60)
+        self.copyButton.clicked.connect(self._copy)
+        top.addWidget(self.copyButton)
         layout.addLayout(top)
 
         self.scroll = QScrollArea(self)
@@ -188,3 +192,24 @@ class RoundTab(QWidget):
             self.groupRow.addWidget(self._build_section(next_rid))
         self.groupRow.addStretch(1)
         self.round_changed.emit(round_id)
+
+    def _copy_text(self):
+        lines = []
+        for rid in [self.current_round_id, self._next_round(self.current_round_id)]:
+            if rid is None:
+                continue
+            numbers = self.data["numbers"][rid]
+            win = self.data["win"][rid]
+            bonus = self.data["bonus"][rid]
+            stats = compute_stats(numbers, win, bonus)
+            lines.append(f"=== {rid}회차 ===")
+            lines.append(f"당첨번호: {', '.join(str(n) for n in sorted(win))}")
+            lines.append(f"보너스번호: {', '.join(str(n) for n in sorted(bonus))}")
+            lines.append(
+                f"합계: {stats['total']} | AC: {stats['ac']} | SD: {stats['sd']:.1f} | "
+                f"홀:짝: {stats['odd']}:{stats['even']} | 그룹출현: {' : '.join(str(c) for c in stats['group_counts'])}"
+            )
+        return "\n".join(lines)
+
+    def _copy(self):
+        QApplication.clipboard().setText(self._copy_text())

@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
         self.sheet_lister = None
         self.round_tab = None
         self.ratio_tab = None
+        self.group_tab = None
         self.filepath = APP_DIR
         self.tabWidget.setCurrentIndex(0)
         self.fileLabel.setText("파일: 선택 안 됨")
@@ -98,6 +99,7 @@ class MainWindow(QMainWindow):
         self.tabs_loaded = set()
         self.round_tab = None
         self.ratio_tab = None
+        self.group_tab = None
         self.fileLabel.setText(f"파일: {os.path.basename(filepath)}")
         self.sheetCombo.blockSignals(True)
         self.sheetCombo.clear()
@@ -138,7 +140,25 @@ class MainWindow(QMainWindow):
         self.sheetCombo.setCurrentText(data["sheet_name"])
         self.sheetCombo.blockSignals(False)
         self.sheetCombo.setEnabled(True)
+        self._reset_tabs()
         self.load_round_tab()
+
+    def _reset_tabs(self):
+        self.tabs_loaded = set()
+        self.round_tab = None
+        self.ratio_tab = None
+        self.group_tab = None
+        pages = [
+            (0, self.page_round, "회차 조회"),
+            (1, self.page_ratio, "당첨 비율"),
+            (2, self.page_group, "그룹 통계"),
+        ]
+        self.tabWidget.blockSignals(True)
+        for idx, page, title in pages:
+            self.tabWidget.removeTab(idx)
+            self.tabWidget.insertTab(idx, page, title)
+        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.blockSignals(False)
 
     def on_sheet_changed(self, index):
         if index < 0:
@@ -178,11 +198,18 @@ class MainWindow(QMainWindow):
     def on_round_changed(self, round_id):
         if self.ratio_tab is not None and 1 in self.tabs_loaded:
             self.ratio_tab.update_for_round(round_id)
+        if self.group_tab is not None and 2 in self.tabs_loaded:
+            self.group_tab.update_for_round(round_id)
 
     def load_group_tab(self):
         if self.data is None:
             return
-        self._replace_tab(2, GroupTab(self.data), "그룹 통계")
+        if 2 not in self.tabs_loaded:
+            round_id = None
+            if self.round_tab is not None:
+                round_id = self.round_tab.current_round_id
+            self.group_tab = GroupTab(self.data, round_id=round_id)
+            self._replace_tab(2, self.group_tab, "그룹 통계")
         self.tabWidget.setCurrentIndex(2)
 
     def on_tab_changed(self, index):
